@@ -1,7 +1,8 @@
+~*
 .storybook
 *.iml
 *.log
-.idea
+.idea/
 .ipr
 .iws
 *~
@@ -13,28 +14,31 @@
 Thumbs.db
 .project
 .*proj
-.svn
+.svn/
 *.swp
 *.swo
 *.pyc
 *.pyo
+.build
 node_modules
 .cache
-*.css
+assets/**/*.css
 build
 lib
 es
-coverage
+dist
 yarn.lock
 package-lock.json
+coverage/
+.doc
 
-# dumi
+# umi
 .umi
 .umi-production
 .umi-test
-.docs
-
+.env.local
 
 # dumi
 .dumi/tmp
 .dumi/tmp-production
+.dumi/tmp-test
