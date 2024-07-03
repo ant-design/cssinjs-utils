@@ -57,8 +57,9 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@babel/runtime": "^7.23.2",
     "@ant-design/cssinjs": "^1.21.0",
+    "@babel/runtime": "^7.23.2",
+    "@ctrl/tinycolor": "^4.1.0",
     "classnames": "^2.3.2",
     "rc-util": "^5.38.0"
   },
