@@ -7,4 +7,4 @@ export type OverrideToken<CompTokenMap extends DefaultCompTokenMap> = {
 };
 
 /** Final token which contains the components level override */
-export type GlobalToken<CompTokenMap extends DefaultCompTokenMap = DefaultCompTokenMap> = AliasToken & CompTokenMap;
+export type GlobalToken<CompTokenMap extends DefaultCompTokenMap> = AliasToken & CompTokenMap;

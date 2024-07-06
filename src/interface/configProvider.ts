@@ -1,6 +1,6 @@
 export default interface DefaultConfigConsumerProps {
-  getPrefixCls: (suffixCls?: string, customizePrefixCls?: string) => string;
-  iconPrefixCls: string;
+  getPrefixCls?: (suffixCls?: string, customizePrefixCls?: string) => string;
+  iconPrefixCls?: string;
   csp?: CSPConfig;
 }
 
