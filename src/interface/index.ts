@@ -14,7 +14,6 @@ export type {
   GlobalToken,
 } from './components';
 
-export type { default as DefaultConfigConsumerProps, CSPConfig } from './configProvider';
 export type {
   ColorMapToken,
   ColorNeutralMapToken,
@@ -26,15 +25,7 @@ export type {
   StyleMapToken,
 } from './maps';
 export { PresetColors } from './presetColors';
-export {
-  unitless,
-  ignore,
-  preserve,
-  defaultTheme,
-} from './themeProvider';
-export type {
-  DesignTokenProviderProps,
-} from './themeProvider';
+
 export type {
   LegacyColorPalettes,
   ColorPalettes,

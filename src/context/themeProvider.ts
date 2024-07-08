@@ -1,16 +1,12 @@
-
+import React from 'react';
 import type { Theme } from '@ant-design/cssinjs';
-import { createTheme } from '@ant-design/cssinjs';
 
+import type { AnyObject } from '../_util/type';
 
-import defaultDerivative from '../themes/default';
+import type { AliasToken, OverrideToken, MapToken, SeedToken } from '../interface';
+
 import defaultSeedToken from '../themes/seed';
 
-import type { AliasToken } from './alias';
-import type { AnyObject } from '../_util/type';
-import type { OverrideToken } from './components';
-import type { MapToken } from './maps';
-import type { SeedToken } from './seeds';
 
 export const unitless: {
   [key in keyof AliasToken]?: boolean;
@@ -70,14 +66,15 @@ export const preserve: {
 };
 
 
-export const defaultTheme = createTheme(defaultDerivative);
-
 // ================================ Context =================================
 // To ensure snapshot stable. We disable hashed in test env.
-export const defaultConfig = {
+export const DefaultThemeProviderContextConfig = {
   token: defaultSeedToken,
   override: { override: defaultSeedToken },
   hashed: true,
+  theme: undefined,
+  components: undefined,
+  cssVar: undefined,
 };
 
 export type ComponentsToken<CompTokenMap extends AnyObject> = {
@@ -86,7 +83,7 @@ export type ComponentsToken<CompTokenMap extends AnyObject> = {
   };
 };
 
-export interface DesignTokenProviderProps<CompTokenMap> {
+export interface DesignTokenProviderProps<CompTokenMap extends AnyObject> {
   token: Partial<AliasToken>;
   theme?: Theme<SeedToken, MapToken>;
   components?: ComponentsToken<CompTokenMap>;
@@ -97,5 +94,22 @@ export interface DesignTokenProviderProps<CompTokenMap> {
     prefix?: string;
     key?: string;
   };
+}
+
+export type UseThemeProviderContext<CompTokenMap extends AnyObject> = () => [React.Context<DesignTokenProviderProps<CompTokenMap>>];
+
+export function useMergedThemeContext<CompTokenMap extends AnyObject> (useThemeProviderContext?: UseThemeProviderContext<CompTokenMap>) {
+  const DefaultThemeProviderContext = React.createContext(DefaultThemeProviderContextConfig);
+
+  if (typeof useThemeProviderContext === 'function') {
+    const [ThemeProviderContext] = useThemeProviderContext();
+
+    return React.useContext({
+      ...DefaultThemeProviderContext,
+      ...ThemeProviderContext,
+    });
+  }
+
+  return React.useContext(DefaultThemeProviderContext);
 }
 

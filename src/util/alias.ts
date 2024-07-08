@@ -3,18 +3,18 @@ import { TinyColor } from '@ctrl/tinycolor';
 import type { AliasToken, MapToken, OverrideToken, SeedToken } from '../interface';
 import seedToken from '../themes/seed';
 import getAlphaColor from './getAlphaColor';
-import type { AnyObject } from '../_util/type';
+import { AnyObject } from '../_util/type';
 
 /** Raw merge of `@ant-design/cssinjs` token. Which need additional process */
-type RawMergedToken = MapToken & { override: Partial<AliasToken> };
-// type RawMergedToken<CompTokenMap extends AnyObject> = MapToken & OverrideToken<CompTokenMap> & { override: Partial<AliasToken> };
+// type RawMergedToken = MapToken & { override: Partial<AliasToken> };
+type RawMergedToken<CompTokenMap extends AnyObject> = MapToken & OverrideToken<CompTokenMap> & { override: Partial<AliasToken> };
 
 /**
  * Seed (designer) > Derivative (designer) > Alias (developer).
  *
  * Merge seed & derivative & override token and generate alias token for developer.
  */
-export default function formatToken(derivativeToken: RawMergedToken): AliasToken {
+export default function formatToken<CompTokenMap extends AnyObject> (derivativeToken: RawMergedToken<CompTokenMap>): AliasToken {
   const { override, ...restToken } = derivativeToken;
   const overrideTokens = { ...override };
 
