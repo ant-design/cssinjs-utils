@@ -4,7 +4,6 @@ import type { ComponentType, FC, ReactElement } from 'react';
 
 import { token2CSSVar, useCSSVarRegister, useStyleRegister } from '@ant-design/cssinjs';
 import type { CSSInterpolation, Theme } from '@ant-design/cssinjs';
-import { warning } from 'rc-util';
 
 import {
   unitless,
@@ -31,8 +30,10 @@ import genCalc from './calc';
 import genMaxMin from './maxmin';
 import genLinkStyle from './genLinkStyle';
 import genCommonStyle from './genCommonStyle';
-
+import getCompVarPrefix from './getCompVarPrefix';
 import AbstractCalculator from './calc/calculator';
+import getComponentToken from './getComponentToken';
+import getDefaultComponentToken from './getDefaultComponentToken';
 import statisticToken, { merge as mergeToken } from './statistic';
 
 import useUniqueMemo from '../_util/hooks/useUniqueMemo';
@@ -44,8 +45,8 @@ export type OverrideComponent<CompTokenMap extends AnyObject> = Extract<keyof Co
 export type GlobalTokenWithComponent<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = GlobalToken<CompTokenMap> &
   CompTokenMap[C];
 
-type ComponentToken<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = Exclude<OverrideToken<CompTokenMap>[C], undefined>;
-type ComponentTokenKey<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = keyof ComponentToken<CompTokenMap, C>;
+export type ComponentToken<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = Exclude<OverrideToken<CompTokenMap>[C], undefined>;
+export type ComponentTokenKey<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = keyof ComponentToken<CompTokenMap, C>;
 
 export interface StyleInfo {
   hashId: string;
@@ -107,63 +108,24 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
   useThemeProviderContext?: UseThemeProviderContext<CompTokenMap>,
 ) {
 
-  const getDefaultComponentToken = <C extends OverrideComponent<CompTokenMap>>(
-    component: C,
+  function useToken(): [
+    theme: Theme<SeedToken, MapToken>,
     token: GlobalToken<CompTokenMap>,
-    getDefaultToken: GetDefaultToken<CompTokenMap, C>,
-  ) => {
-    if (typeof getDefaultToken === 'function') {
-      return (getDefaultToken as Function)(mergeToken(token, token[component] ?? {}));
-    }
-    return getDefaultToken ?? {};
-  };
+    hashId: string,
+    realToken: GlobalToken<CompTokenMap>,
+    cssVar?: DesignTokenProviderProps<CompTokenMap>['cssVar'],
+  ] {
+    const {
+      token,
+      hashed,
+      hashId,
+      theme,
+      realToken,
+      cssVar,
+    } = useMergedThemeContext<CompTokenMap>(useThemeProviderContext);
 
-  const getComponentToken = <C extends OverrideComponent<CompTokenMap>>(
-    component: C,
-    token: GlobalToken<CompTokenMap>,
-    defaultToken: CompTokenMap[C],
-    options?: {
-      deprecatedTokens?: [ComponentTokenKey<CompTokenMap, C>, ComponentTokenKey<CompTokenMap, C>][];
-    },
-  ) => {
-    const customToken = { ...(token[component] as ComponentToken<CompTokenMap, C>) };
-    if (options?.deprecatedTokens) {
-      const { deprecatedTokens } = options;
-      deprecatedTokens.forEach(([oldTokenKey, newTokenKey]) => {
-        if (process.env.NODE_ENV !== 'production') {
-          warning(
-            !customToken?.[oldTokenKey],
-            `Component Token \`${String(
-              oldTokenKey,
-            )}\` of ${String(component)} is deprecated. Please use \`${String(newTokenKey)}\` instead.`,
-          );
-        }
-
-        // Should wrap with `if` clause, or there will be `undefined` in object.
-        if (customToken?.[oldTokenKey] || customToken?.[newTokenKey]) {
-          customToken[newTokenKey] ??= customToken?.[oldTokenKey];
-        }
-      });
-    }
-    const mergedToken: any = { ...defaultToken, ...customToken };
-
-    // Remove same value as global token to minimize size
-    Object.keys(mergedToken).forEach((key) => {
-      if (mergedToken[key] === token[key as keyof GlobalToken<CompTokenMap>]) {
-        delete mergedToken[key];
-      }
-    });
-
-    return mergedToken;
-  };
-
-  const getCompVarPrefix = (component: string, prefix?: string) =>
-    `${[
-      prefix,
-      component.replace(/([A-Z]+)([A-Z][a-z]+)/g, '$1-$2').replace(/([a-z])([A-Z])/g, '$1-$2'),
-    ]
-      .filter(Boolean)
-      .join('-')}`;
+    return [theme, token, hashed ? hashId : '', realToken, cssVar];
+  }
 
   function genStyleHooks<C extends OverrideComponent<CompTokenMap>>(
     component: C | [C, string],
@@ -231,26 +193,6 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
     };
   };
 
-  function useToken(): [
-    theme: Theme<SeedToken, MapToken>,
-    token: GlobalToken<CompTokenMap>,
-    hashId: string,
-    realToken: GlobalToken<CompTokenMap>,
-    cssVar?: DesignTokenProviderProps<CompTokenMap>['cssVar'],
-  ] {
-
-    const {
-      token,
-      hashed,
-      hashId,
-      theme,
-      realToken,
-      cssVar,
-    } = useMergedThemeContext<CompTokenMap>(useThemeProviderContext);
-
-    return [theme, token, hashed ? hashId : '', realToken, cssVar];
-  }
-
   function genCSSVarRegister<C extends OverrideComponent<CompTokenMap>>(
     component: C,
     getDefaultToken: GetDefaultToken<CompTokenMap, C> | undefined,
@@ -278,8 +220,8 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
           scope: rootCls,
         },
         () => {
-          const defaultToken = getDefaultComponentToken(component, realToken, getDefaultToken);
-          const componentToken = getComponentToken(component, realToken, defaultToken, {
+          const defaultToken = getDefaultComponentToken<CompTokenMap, C>(component, realToken, getDefaultToken);
+          const componentToken = getComponentToken<CompTokenMap, C>(component, realToken, defaultToken, {
             deprecatedTokens: options?.deprecatedTokens,
           });
           Object.keys(defaultToken).forEach((key) => {
@@ -407,14 +349,14 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
 
           const { token: proxyToken, flush } = statisticToken(token);
 
-          const defaultComponentToken = getDefaultComponentToken(
+          const defaultComponentToken = getDefaultComponentToken<CompTokenMap, C>(
             component,
             realToken,
             getDefaultToken,
           );
 
           const componentCls = `.${prefixCls}`;
-          const componentToken = getComponentToken(component, realToken, defaultComponentToken, {
+          const componentToken = getComponentToken<CompTokenMap, C>(component, realToken, defaultComponentToken, {
             deprecatedTokens: options.deprecatedTokens,
           });
 
@@ -508,7 +450,6 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
 
     return StyledComponent;
   };
-
 
   return {
     genStyleHooks,
