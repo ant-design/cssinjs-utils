@@ -7,7 +7,7 @@ export interface DefaultConfigConsumerProps {
   csp?: CSPConfig;
 }
 
-export interface CSPConfig {
+interface CSPConfig {
   nonce?: string;
 }
 
@@ -18,7 +18,7 @@ const defaultGetPrefixCls = (suffixCls?: string, customizePrefixCls?: string) =>
   return suffixCls ? `ant-${suffixCls}` : 'ant';
 };
 
-export const defaultIconPrefixCls = 'anticon';
+const defaultIconPrefixCls = 'anticon';
 
 
 export const DefaultConfigProviderContext = React.createContext<DefaultConfigConsumerProps>({

@@ -2,20 +2,29 @@
 import React from 'react';
 import type { ComponentType, FC, ReactElement } from 'react';
 
-import { token2CSSVar, useCSSVarRegister, useStyleRegister, useCacheToken } from '@ant-design/cssinjs';
+import { token2CSSVar, useCSSVarRegister, useStyleRegister } from '@ant-design/cssinjs';
 import type { CSSInterpolation, Theme } from '@ant-design/cssinjs';
 import { warning } from 'rc-util';
 
-import { useMergedConfigContext } from '../context/configProvider';
-import type { CSPConfig, UseConfigProviderContext } from '../context/configProvider';
-import { ignore, unitless, preserve, useMergedThemeContext } from '../context/themeProvider';
-import type { DesignTokenProviderProps, UseThemeProviderContext } from '../context/themeProvider';
+import {
+  unitless,
+  ignore,
+  useMergedConfigContext,
+  useMergedThemeContext,
+} from '../context';
+import type {
+  UseConfigProviderContext,
+  UseThemeProviderContext,
+  DesignTokenProviderProps,
+} from '../context';
+
 import type {
   UseComponentStyleResult,
   AliasToken,
   GlobalToken,
   OverrideToken,
-  MapToken, SeedToken
+  SeedToken,
+  MapToken,
 } from '../interface';
 
 import genCalc from './calc';
@@ -28,10 +37,6 @@ import statisticToken, { merge as mergeToken } from './statistic';
 
 import useUniqueMemo from '../_util/hooks/useUniqueMemo';
 import type { AnyObject } from '../_util/type';
-
-import defaultSeedToken from '../themes/seed';
-import formatToken from './alias';
-import { resetIcon } from './resetIcon';
 
 
 export type OverrideComponent<CompTokenMap extends AnyObject> = Extract<keyof CompTokenMap, string>;
@@ -100,9 +105,6 @@ export type CSSVarRegisterProps = {
 export default function genStyleUtils<CompTokenMap extends AnyObject>(
   useConfigProviderContext?: UseConfigProviderContext,
   useThemeProviderContext?: UseThemeProviderContext<CompTokenMap>,
-  options?: {
-    version: string
-  }
 ) {
 
   const getDefaultComponentToken = <C extends OverrideComponent<CompTokenMap>>(
@@ -162,92 +164,6 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
     ]
       .filter(Boolean)
       .join('-')}`;
-
-  const getComputedToken = (
-    originToken: SeedToken,
-    overrideToken: DesignTokenProviderProps<CompTokenMap>['components'] & {
-      override?: Partial<AliasToken>;
-    },
-    theme: Theme<any, any>,
-  ) => {
-    const derivativeToken = theme.getDerivativeToken(originToken);
-
-    const { override, ...components } = overrideToken;
-
-    // Merge with override
-    let mergedDerivativeToken = {
-      ...derivativeToken,
-      override,
-    };
-
-    // Format if needed
-    mergedDerivativeToken = formatToken<CompTokenMap>(mergedDerivativeToken);
-
-    if (components) {
-      Object.entries(components).forEach(([key, value]) => {
-        const { theme: componentTheme, ...componentTokens } = value;
-        let mergedComponentToken = componentTokens;
-        if (componentTheme) {
-          mergedComponentToken = getComputedToken(
-            {
-              ...mergedDerivativeToken,
-              ...componentTokens,
-            },
-            {
-              override: componentTokens,
-            } as any,
-            componentTheme,
-          );
-        }
-        mergedDerivativeToken[key] = mergedComponentToken;
-      });
-    }
-
-    return mergedDerivativeToken;
-  };
-
-  function useToken(): [
-    theme: Theme<SeedToken, MapToken>,
-    token: GlobalToken<CompTokenMap>,
-    hashId: string,
-    realToken: GlobalToken<CompTokenMap>,
-    cssVar?: DesignTokenProviderProps<CompTokenMap>['cssVar'],
-  ] {
-
-    const {
-      token: rootDesignToken,
-      hashed,
-      override,
-      theme,
-      cssVar,
-    } = useMergedThemeContext<CompTokenMap>(useThemeProviderContext);
-
-    const salt = `${options?.version || ''}-${hashed || ''}`;
-
-    const mergedTheme = theme;
-
-    const [token, hashId, realToken] = useCacheToken<GlobalToken<CompTokenMap>, SeedToken>(
-      mergedTheme,
-      [defaultSeedToken, rootDesignToken],
-      {
-        salt,
-        override,
-        getComputedToken,
-        // formatToken will not be consumed after 1.15.0 with getComputedToken.
-        // But token will break if @ant-design/cssinjs is under 1.15.0 without it
-        formatToken,
-        cssVar: cssVar && {
-          prefix: cssVar?.prefix,
-          key: cssVar?.key,
-          unitless,
-          ignore,
-          preserve,
-        },
-      } as any,
-    );
-
-    return [mergedTheme, realToken, hashed ? hashId : '', token, cssVar];
-  }
 
   function genStyleHooks<C extends OverrideComponent<CompTokenMap>>(
     component: C | [C, string],
@@ -315,33 +231,25 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
     };
   };
 
-  function useResetIconStyle(iconPrefixCls: string, csp?: CSPConfig) {
-    const [theme, token] = useToken();
+  function useToken(): [
+    theme: Theme<SeedToken, MapToken>,
+    token: GlobalToken<CompTokenMap>,
+    hashId: string,
+    realToken: GlobalToken<CompTokenMap>,
+    cssVar?: DesignTokenProviderProps<CompTokenMap>['cssVar'],
+  ] {
 
-    // Generate style for icons
-    return useStyleRegister(
-      {
-        theme,
-        token,
-        hashId: '',
-        path: ['ant-design-icons', iconPrefixCls],
-        nonce: () => csp?.nonce!,
-        layer: {
-          name: 'antd',
-        },
-      },
-      () => [
-        {
-          [`.${iconPrefixCls}`]: {
-            ...resetIcon(),
-            [`.${iconPrefixCls} .${iconPrefixCls}-icon`]: {
-              display: 'block',
-            },
-          },
-        },
-      ],
-    );
-  };
+    const {
+      token,
+      hashed,
+      hashId,
+      theme,
+      realToken,
+      cssVar,
+    } = useMergedThemeContext<CompTokenMap>(useThemeProviderContext);
+
+    return [theme, token, hashed ? hashId : '', realToken, cssVar];
+  }
 
   function genCSSVarRegister<C extends OverrideComponent<CompTokenMap>>(
     component: C,
@@ -488,7 +396,7 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
       );
 
       // Generate style for icons
-      useResetIconStyle(iconPrefixCls, csp);
+      // useResetIconStyle(iconPrefixCls, csp);
 
       const wrapSSR = useStyleRegister(
         { ...sharedConfig, path: [concatComponent, prefixCls, iconPrefixCls] },
