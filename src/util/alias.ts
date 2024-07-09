@@ -3,7 +3,7 @@ import { TinyColor } from '@ctrl/tinycolor';
 import type { AliasToken, MapToken, OverrideToken, SeedToken } from '../interface';
 import seedToken from '../themes/seed';
 import getAlphaColor from './getAlphaColor';
-import { AnyObject } from '../_util/type';
+import type { AnyObject } from '../_util/type';
 
 /** Raw merge of `@ant-design/cssinjs` token. Which need additional process */
 // type RawMergedToken = MapToken & { override: Partial<AliasToken> };

@@ -1,7 +1,7 @@
 import React from 'react';
-import { AnyObject } from '../_util/type';
+import type { AnyObject } from '../_util/type';
 
-export interface DefaultConfigConsumerProps {
+export interface DefaultConfigConsumerProps extends AnyObject {
   getPrefixCls?: (suffixCls?: string, customizePrefixCls?: string) => string;
   iconPrefixCls?: string;
   csp?: CSPConfig;
@@ -27,17 +27,14 @@ export const DefaultConfigProviderContext = React.createContext<DefaultConfigCon
   iconPrefixCls: defaultIconPrefixCls,
 });
 
-export type UseConfigProviderContext = () => [React.Context<DefaultConfigConsumerProps & AnyObject>];
+export type GetConfigProviderContext = () => [React.Context<DefaultConfigConsumerProps>];
 
-export function useMergedConfigContext (useConfigProviderContext?: UseConfigProviderContext) {
-  if (typeof useConfigProviderContext === 'function') {
-    const [ConfigProviderContext] = useConfigProviderContext();
+export function useMergedConfigContext(getConfigProviderContext?: GetConfigProviderContext) {
 
-    return React.useContext({
-      ...DefaultConfigProviderContext,
-      ...ConfigProviderContext,
-    })
-  }
+  const [ConfigProviderContext = {}] = getConfigProviderContext?.() ?? [];
 
-  return React.useContext(DefaultConfigProviderContext);
+  return React.useContext({
+    ...DefaultConfigProviderContext,
+    ...ConfigProviderContext,
+  })
 }

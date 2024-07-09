@@ -1,4 +1,3 @@
-/* eslint-disable no-redeclare */
 import React from 'react';
 import type { ComponentType, FC, ReactElement } from 'react';
 
@@ -12,8 +11,8 @@ import {
   useMergedThemeContext,
 } from '../context';
 import type {
-  UseConfigProviderContext,
-  UseThemeProviderContext,
+  GetConfigProviderContext,
+  GetThemeProviderContext,
   DesignTokenProviderProps,
 } from '../context';
 
@@ -31,7 +30,7 @@ import genMaxMin from './maxmin';
 import genLinkStyle from './genLinkStyle';
 import genCommonStyle from './genCommonStyle';
 import getCompVarPrefix from './getCompVarPrefix';
-import AbstractCalculator from './calc/calculator';
+import type AbstractCalculator from './calc/calculator';
 import getComponentToken from './getComponentToken';
 import getDefaultComponentToken from './getDefaultComponentToken';
 import statisticToken, { merge as mergeToken } from './statistic';
@@ -81,13 +80,15 @@ export type GenStyleFn<CompTokenMap extends AnyObject, C extends OverrideCompone
   info: StyleInfo,
 ) => CSSInterpolation;
 
+export type GetDefaultTokenFn<
+  CompTokenMap extends AnyObject,
+  C extends OverrideComponent<CompTokenMap>
+> = (token: AliasToken & Partial<CompTokenMap[C]>) => CompTokenMap[C];
 
 export type GetDefaultToken<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> =
   | null
   | CompTokenMap[C]
-  | ((
-    token: AliasToken & Partial<CompTokenMap[C]>,
-  ) => CompTokenMap[C]);
+  | GetDefaultTokenFn<CompTokenMap, C>
 
 export interface SubStyleComponentProps {
   prefixCls: string;
@@ -104,8 +105,8 @@ export type CSSVarRegisterProps = {
 };
 
 export default function genStyleUtils<CompTokenMap extends AnyObject>(
-  useConfigProviderContext?: UseConfigProviderContext,
-  useThemeProviderContext?: UseThemeProviderContext<CompTokenMap>,
+  getConfigProviderContext?: GetConfigProviderContext,
+  getThemeProviderContext?: GetThemeProviderContext<CompTokenMap>,
 ) {
 
   function useToken(): [
@@ -122,7 +123,7 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
       theme,
       realToken,
       cssVar,
-    } = useMergedThemeContext<CompTokenMap>(useThemeProviderContext);
+    } = useMergedThemeContext<CompTokenMap>(getThemeProviderContext);
 
     return [theme, token, hashed ? hashId : '', realToken, cssVar];
   }
@@ -207,13 +208,13 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
   ) {
     const { unitless: compUnitless, injectStyle = true, prefixToken } = options;
 
-    const CSSVarRegister: FC<CSSVarRegisterProps> = ({ rootCls, cssVar }) => {
+    const CSSVarRegister: FC<CSSVarRegisterProps> = ({ rootCls, cssVar = {} }) => {
       const [, realToken] = useToken();
       useCSSVarRegister(
         {
           path: [component],
           prefix: cssVar.prefix,
-          key: cssVar?.key!,
+          key: cssVar.key!,
           unitless: compUnitless,
           ignore,
           token: realToken,
@@ -289,7 +290,7 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
     return (prefixCls: string, rootCls: string = prefixCls): UseComponentStyleResult => {
       const [theme, realToken, hashId, token, cssVar] = useToken();
 
-      const { getPrefixCls, iconPrefixCls, csp } = useMergedConfigContext(useConfigProviderContext);
+      const { getPrefixCls, iconPrefixCls, csp = {} } = useMergedConfigContext(getConfigProviderContext);
 
       const rootPrefixCls = getPrefixCls();
 
@@ -316,7 +317,7 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
         theme,
         token,
         hashId,
-        nonce: () => csp?.nonce!,
+        nonce: () => csp.nonce!,
         clientOnly: options.clientOnly,
         layer: {
           name: 'antd',

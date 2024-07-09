@@ -41,16 +41,6 @@ export const ignore: {
   motionUnit: true,
 };
 
-
-// export type OverrideToken<CompTokenMap extends AnyObject> = {
-//   [key in keyof CompTokenMap]: Partial<CompTokenMap[key]> & Partial<AliasToken>;
-// };
-
-// /** Final token which contains the components level override */
-// export type GlobalToken<CompTokenMap extends AnyObject> = AliasToken & CompTokenMap;
-
-
-
 type ComponentsToken<CompTokenMap extends AnyObject> = {
   [key in keyof OverrideToken<CompTokenMap>]?: OverrideToken<CompTokenMap>[key] & {
     theme?: Theme<SeedToken, MapToken>;
@@ -79,20 +69,18 @@ export const DefaultThemeProviderContextConfig = {
   hashed: true,
 };
 
-export type UseThemeProviderContext<CompTokenMap extends AnyObject> = () => [React.Context<DesignTokenProviderProps<CompTokenMap>>];
+export type GetThemeProviderContext<CompTokenMap extends AnyObject> = () => [React.Context<DesignTokenProviderProps<CompTokenMap>>];
 
-export function useMergedThemeContext<CompTokenMap extends AnyObject> (useThemeProviderContext?: UseThemeProviderContext<CompTokenMap>) {
-  const DefaultThemeProviderContext = React.createContext<DesignTokenProviderProps<CompTokenMap>>(DefaultThemeProviderContextConfig as DesignTokenProviderProps<CompTokenMap>);
+export function useMergedThemeContext<CompTokenMap extends AnyObject> (getThemeProviderContext?: GetThemeProviderContext<CompTokenMap>) {
+  const DefaultThemeProviderContext = React.createContext<DesignTokenProviderProps<CompTokenMap>>(
+    DefaultThemeProviderContextConfig as DesignTokenProviderProps<CompTokenMap>
+  );
 
-  if (typeof useThemeProviderContext === 'function') {
-    const [ThemeProviderContext] = useThemeProviderContext();
+  const [ThemeProviderContext = {}] = getThemeProviderContext?.() ?? [];
 
-    return React.useContext({
-      ...DefaultThemeProviderContext,
-      ...ThemeProviderContext,
-    });
-  }
-
-  return React.useContext(DefaultThemeProviderContext);
+  return React.useContext({
+    ...DefaultThemeProviderContext,
+    ...ThemeProviderContext,
+  });
 }
 

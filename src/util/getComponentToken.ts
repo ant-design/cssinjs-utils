@@ -1,5 +1,5 @@
-import { GlobalToken } from '../interface';
 import { warning } from 'rc-util';
+import type { GlobalToken } from '../interface';
 import type { OverrideComponent, ComponentTokenKey, ComponentToken } from './genStyleUtils';
 
 export default function getComponentToken<CompTokenMap, C extends OverrideComponent<CompTokenMap>>(
