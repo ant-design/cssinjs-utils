@@ -30,7 +30,7 @@
     "start": "dumi dev",
     "compile": "father build",
     "prepublishOnly": "npm run compile && np --yolo --no-publish",
-    "lint": "eslint src/ docs/examples/ --ext .tsx,.ts,.jsx,.js",
+    "lint": "eslint src/ --ext .tsx,.ts,.jsx,.js",
     "test": "rc-test",
     "coverage": "rc-test --coverage"
   },
