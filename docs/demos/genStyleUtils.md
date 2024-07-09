@@ -4,46 +4,31 @@ nav:
   title: API
   path: /genStyleUtils
 ---
-### 介绍
-`genStyleUtils` 是一个生成器，用于生成在 `antd` 生态下开发组件样式的工具集。它返回这些工具：
- - `genComponentStyleHook`: 用于生成组件样式
- - `genStyleHooks`: 用于生成组件样式集合
- - `genSubStyleComponent`: 用于生成子组件样式
- - `useToken`: 获取 token 的钩子函数
+# `genStyleUtils` 使用文档
 
-### 使用建议
-为了更好的获得 TS 类型支持，建议您在使用 `genStyleUtils` 的时候传入范型参数 `CompTokenMap`，比如：
-``` typescript
-import { genStyleUtils } from '@ant-design/cssinjs-util';
+`genStyleUtils` 提供了用于在 `antd` 生态开发中，生成和管理样式的实用工具函数集。
 
-interface YourCompTokenMap {
-  Button?: {};
-};
+## 入参介绍
 
-genStyleUtils<YourCompTokenMap>();
-```
+### `genStyleUtils<CompTokenMap>(getConfigProviderContext?, getThemeProviderContext?)`
+- `getConfigProviderContext`: 可选，用于获取配置上下文的钩子函数。
+- `getThemeProviderContext`: 可选，用于获取主题上下文的钩子函数。
+- `CompTokenMap`: 范型参数，表示组件 token 映射
+> 使用建议：为了更好的获得 TS 类型支持，建议您在使用 `genStyleUtils` 的时候传入范型参数 `CompTokenMap`
 
-### 基础使用
-> 最简单的用法，适用于对上下文无扩展需要
-``` typescript
-import { genStyleUtils } from '@ant-design/cssinjs-util';
-
-const utils = genStyleUtils<YourCompTokenMap>();
-
-const {
-  genComponentStyleHook,
-  genStyleHooks,
-  genSubStyleComponent,
-  useToken
-} = utils;
-```
-
-### 扩展上下文
-> 使用 `genStyleUtils` 的时候传入 `getConfigProviderContext` 和 `getThemeProviderContext` 两个函数，用于扩展 `ConfigProvider` 和 `ThemeProvider` 的上下文。
+## 如何使用
 ``` typescript
 import React from 'react';
 import { genStyleUtils } from '@ant-design/cssinjs-util';
 
+// Step1: 定义组件 Token 映射
+interface YourCompTokenMap {
+  Button?: {};
+  Avatar?: {};
+  // ...
+}
+
+// Step2: 定义配置上下文
 function getConfigProviderContext () {
   // ... do something
   return React.createContext({
@@ -51,12 +36,75 @@ function getConfigProviderContext () {
   });
 }
 
+// Step3: 定义主题上下文
 function getThemeProviderContext () {
   // ...do something
   return React.createContext({
     // ... your theme context
   });
 }
+// Step4: 使用 `genStyleUtils` 生成工具函数集
+const {
+  genStyleHooks,
+  genComponentStyleHook,
+  genSubStyleComponent,
+  useToken,
+} = genStyleUtils<YourCompTokenMap>(getConfigProviderContext, getThemeProviderContext);
+```
 
-const utils = genStyleUtils<YourCompTokenMap>(getConfigProviderContext, getThemeProviderContext);
+## 工具介绍
+
+### `genStyleHooks(component, styleFn, getDefaultToken?, options?)`
+
+- `component`: 组件名称 `ComponentName` 或组件名称数组 `[ComponentName, ComponentName]`。
+- `styleFn`: 根据标记和样式信息生成 CSS 插值的函数。
+- `getDefaultToken`: 可选，用于检索默认标记的函数或值。
+- `options`: 可选，包含额外的配置选项如 `resetStyle`、`resetFont`、`deprecatedTokens`、`clientOnly` 等。
+
+### `genComponentStyleHook(component, styleFn, getDefaultToken?, options?)`
+
+- `component`: 组件名称 `ComponentName` 或组件名称数组 `[ComponentName, ComponentName]`。
+- `styleFn`: 根据标记和样式信息生成 CSS 插值的函数。
+- `getDefaultToken`: 可选，用于检索默认标记的函数或值。
+- `options`: 可选，包含额外的配置选项如 `resetStyle`、`resetFont`、`deprecatedTokens`、`clientOnly` 等。
+
+### `genSubStyleComponent(component, styleFn, getDefaultToken?, options?)`
+
+- `component`: 组件名称 `ComponentName` 或组件名称数组 `[ComponentName, ComponentName]`。
+- `styleFn`: 根据标记和样式信息生成 CSS 插值的函数。
+- `getDefaultToken`: 可选，用于检索默认标记的函数或值。
+- `options`: 可选，包含额外的配置选项如 `resetStyle`、`resetFont`、`deprecatedTokens`、`clientOnly` 等。
+
+### `useToken()`
+
+ - 无参数。
+
+## 示例用法
+
+### `genStyleHooks`
+
+```javascript
+const useStyle = genStyleHooks('Button', styleFn, getDefaultToken, { resetStyle: true });
+const [wrapStyle, hashId] = useStyle('button');
+```
+
+### `genComponentStyleHook`
+
+```javascript
+const useStyle = genComponentStyleHook('Button', styleFn, getDefaultToken, { clientOnly: true });
+const [wrapStyle, hashId] = useStyle('button');
+```
+
+### `genSubStyleComponent`
+
+```javascript
+const SubButtonStyle = genSubStyleComponent('Button', styleFn, getDefaultToken, { resetFont: true });
+
+() => <SubButtonStyle prefixCls="sub-button" />;
+```
+
+### `useToken`
+
+```javascript
+const [theme, token, hashId, realToken, cssVar] = useToken();
 ```
