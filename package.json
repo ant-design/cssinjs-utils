@@ -38,7 +38,6 @@
     "@testing-library/jest-dom": "^6.1.4",
     "@rc-component/father-plugin": "^1.0.1",
     "@testing-library/react": "^15.0.4",
-    "@types/classnames": "^2.2.10",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.11.6",
     "@types/react": "^18.0.0",
@@ -57,11 +56,9 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@ant-design/colors": "^7.1.0",
     "@ant-design/cssinjs": "^1.21.0",
     "@babel/runtime": "^7.23.2",
     "@ctrl/tinycolor": "^4.1.0",
-    "classnames": "^2.3.2",
     "rc-util": "^5.38.0"
   },
   "peerDependencies": {
