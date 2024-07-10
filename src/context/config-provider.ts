@@ -10,21 +10,7 @@ interface CSPConfig {
   nonce?: string;
 }
 
-const defaultGetPrefixCls = (suffixCls?: string, customizePrefixCls?: string) => {
-  if (customizePrefixCls) {
-    return customizePrefixCls;
-  }
-  return suffixCls ? `ant-${suffixCls}` : 'ant';
-};
-
-const defaultIconPrefixCls = 'anticon';
-
-
-export const DefaultConfigProviderContext = React.createContext<DefaultConfigConsumerProps>({
-  // We provide a default function for Context without provider
-  getPrefixCls: defaultGetPrefixCls,
-  iconPrefixCls: defaultIconPrefixCls,
-});
+export const DefaultConfigProviderContext = React.createContext<DefaultConfigConsumerProps>({});
 
 export type GetConfigProviderContext = () => [React.Context<DefaultConfigConsumerProps>];
 

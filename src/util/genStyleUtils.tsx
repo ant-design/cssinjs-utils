@@ -289,9 +289,9 @@ export default function genStyleUtils<CompTokenMap extends Object>(
     return (prefixCls: string, rootCls: string = prefixCls): UseComponentStyleResult => {
       const [theme, realToken, hashId, token, cssVar] = useToken();
 
-      const { getPrefixCls, iconPrefixCls, csp = {} } = useMergedConfigContext(getConfigProviderContext);
+      const { getPrefixCls, iconPrefixCls = '', csp = {} } = useMergedConfigContext(getConfigProviderContext);
 
-      const rootPrefixCls = getPrefixCls();
+      const rootPrefixCls = getPrefixCls?.() ?? '';
 
       const type = cssVar ? 'css' : 'js';
 
@@ -338,7 +338,6 @@ export default function genStyleUtils<CompTokenMap extends Object>(
       );
 
       // Generate style for icons
-      // useResetIconStyle(iconPrefixCls, csp);
 
       const wrapSSR = useStyleRegister(
         { ...sharedConfig, path: [concatComponent, prefixCls, iconPrefixCls] },
@@ -373,8 +372,8 @@ export default function genStyleUtils<CompTokenMap extends Object>(
             {
               componentCls,
               prefixCls,
-              iconCls: `.${iconPrefixCls}`,
-              antCls: `.${rootPrefixCls}`,
+              iconCls: !!iconPrefixCls.length ? '' : `.${iconPrefixCls}`,
+              antCls: !!rootPrefixCls.length ? '' : `.${rootPrefixCls}`,
               calc,
               // @ts-ignore
               max,
