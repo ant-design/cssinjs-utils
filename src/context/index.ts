@@ -1,5 +1,5 @@
-export { useMergedConfigContext } from './configProvider';
-export { useMergedThemeContext, ignore, unitless } from './themeProvider';
+export { useMergedConfigContext } from './config-provider';
+export { useMergedThemeContext, ignore, unitless } from './theme-provider';
 
-export type { GetConfigProviderContext } from './configProvider';
-export type { GetThemeProviderContext, DesignTokenProviderProps } from './themeProvider';
+export type { GetConfigProviderContext } from './config-provider';
+export type { GetThemeProviderContext, DesignTokenProviderProps } from './theme-provider';
