@@ -2,7 +2,7 @@ import React from 'react';
 import type { ComponentType, FC, ReactElement } from 'react';
 
 import { token2CSSVar, useCSSVarRegister, useStyleRegister } from '@ant-design/cssinjs';
-import type { CSSInterpolation, Theme } from '@ant-design/cssinjs';
+import type { CSSInterpolation, TokenType, CSSObject } from '@ant-design/cssinjs';
 
 import {
   useMergedConfigContext,
@@ -11,38 +11,28 @@ import {
 import type {
   GetConfigProviderContext,
   GetThemeProviderContext,
-  DesignTokenProviderProps,
 } from '../context';
 
 import type {
   UseComponentStyleResult,
-  AliasToken,
-  GlobalToken,
-  OverrideToken,
-  SeedToken,
-  MapToken,
+  TokenMapKey,
+  TokenMap,
+  GlobalTokenWithComponent,
+  ComponentTokenKey,
+  OverrideTokenMap,
 } from '../interface';
+
+import type AbstractCalculator from './calc/calculator';
 
 import genCalc from './calc';
 import genMaxMin from './maxmin';
-import genLinkStyle from './genLinkStyle';
-import genCommonStyle from './genCommonStyle';
 import getCompVarPrefix from './getCompVarPrefix';
-import type AbstractCalculator from './calc/calculator';
 import getComponentToken from './getComponentToken';
 import getDefaultComponentToken from './getDefaultComponentToken';
 import statisticToken, { merge as mergeToken } from './statistic';
 
 import useUniqueMemo from '../_util/hooks/useUniqueMemo';
 
-
-export type OverrideComponent<CompTokenMap extends Object> = Extract<keyof CompTokenMap, string>;
-
-export type GlobalTokenWithComponent<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = GlobalToken<CompTokenMap> &
-  CompTokenMap[C];
-
-export type ComponentToken<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = Exclude<OverrideToken<CompTokenMap>[C], undefined>;
-export type ComponentTokenKey<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = keyof ComponentToken<CompTokenMap, C>;
 
 export interface StyleInfo {
   hashId: string;
@@ -68,21 +58,21 @@ export type TokenWithCommonCls<T> = T & {
   antCls: string;
 } & CSSUtil;
 
-export type FullToken<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = TokenWithCommonCls<
+export type FullToken<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = TokenWithCommonCls<
   GlobalTokenWithComponent<CompTokenMap, C>
 >;
 
-export type GenStyleFn<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = (
+export type GenStyleFn<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = (
   token: FullToken<CompTokenMap, C>,
   info: StyleInfo,
 ) => CSSInterpolation;
 
 export type GetDefaultTokenFn<
-  CompTokenMap extends Object,
-  C extends OverrideComponent<CompTokenMap>
-> = (token: AliasToken & Partial<CompTokenMap[C]>) => CompTokenMap[C];
+  CompTokenMap extends TokenMap,
+  C extends TokenMapKey<CompTokenMap>
+> = (token: Partial<CompTokenMap[C]>) => CompTokenMap[C];
 
-export type GetDefaultToken<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> =
+export type GetDefaultToken<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> =
   | null
   | CompTokenMap[C]
   | GetDefaultTokenFn<CompTokenMap, C>
@@ -101,31 +91,20 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export default function genStyleUtils<CompTokenMap extends Object>(
+export default function genStyleUtils<
+  CompTokenMap extends TokenMap,
+  DesignToken extends TokenType,
+  AliasToken extends TokenType,
+>(
   getConfigProviderContext?: GetConfigProviderContext,
-  getThemeProviderContext?: GetThemeProviderContext<CompTokenMap>,
+  getThemeProviderContext?: GetThemeProviderContext<CompTokenMap, DesignToken, AliasToken>,
 ) {
 
-  function useToken(): [
-    theme: Theme<SeedToken, MapToken>,
-    token: GlobalToken<CompTokenMap>,
-    hashId: string,
-    realToken: GlobalToken<CompTokenMap>,
-    cssVar?: DesignTokenProviderProps<CompTokenMap>['cssVar'],
-  ] {
-    const {
-      token,
-      hashed,
-      hashId,
-      theme,
-      realToken,
-      cssVar,
-    } = useMergedThemeContext<CompTokenMap>(getThemeProviderContext);
-
-    return [theme, token, hashed ? hashId : '', realToken, cssVar];
+  function useToken() {
+    return useMergedThemeContext<CompTokenMap, DesignToken, AliasToken>(getThemeProviderContext);
   }
 
-  function genStyleHooks<C extends OverrideComponent<CompTokenMap>>(
+  function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
     component: C | [C, string],
     styleFn: GenStyleFn<CompTokenMap, C>,
     getDefaultToken?: GetDefaultToken<CompTokenMap, C>,
@@ -191,7 +170,7 @@ export default function genStyleUtils<CompTokenMap extends Object>(
     };
   };
 
-  function genCSSVarRegister<C extends OverrideComponent<CompTokenMap>>(
+  function genCSSVarRegister<C extends TokenMapKey<CompTokenMap>>(
     component: C,
     getDefaultToken: GetDefaultToken<CompTokenMap, C> | undefined,
     options: {
@@ -209,7 +188,7 @@ export default function genStyleUtils<CompTokenMap extends Object>(
     const { unitless: compUnitless, injectStyle = true, prefixToken, ignore } = options;
 
     const CSSVarRegister: FC<CSSVarRegisterProps> = ({ rootCls, cssVar = {} }) => {
-      const [, realToken] = useToken();
+      const { realToken } = useToken();
       useCSSVarRegister(
         {
           path: [component],
@@ -236,7 +215,7 @@ export default function genStyleUtils<CompTokenMap extends Object>(
     };
 
     const useCSSVar = (rootCls: string) => {
-      const [, , , , cssVar] = useToken();
+      const { cssVar } = useToken();
 
       return [
         (node: ReactElement): ReactElement =>
@@ -255,7 +234,7 @@ export default function genStyleUtils<CompTokenMap extends Object>(
     return useCSSVar;
   };
 
-  function genComponentStyleHook<C extends OverrideComponent<CompTokenMap>>(
+  function genComponentStyleHook<C extends TokenMapKey<CompTokenMap>>(
     componentName: C | [C, string],
     styleFn: GenStyleFn<CompTokenMap, C>,
     getDefaultToken?: GetDefaultToken<CompTokenMap, C>,
@@ -276,6 +255,13 @@ export default function genStyleUtils<CompTokenMap extends Object>(
       unitless?: {
         [key in ComponentTokenKey<CompTokenMap, C>]: boolean;
       };
+      genLinkStyle?: (token: OverrideTokenMap<CompTokenMap>) => CSSObject;
+      genCommonStyle?: (
+        token: OverrideTokenMap<CompTokenMap>,
+        componentPrefixCls: string,
+        rootCls?: string,
+        resetFont?: boolean,
+      ) => CSSObject;
     } = {},
   ) {
     const cells = (Array.isArray(componentName) ? componentName : [componentName, componentName]) as [
@@ -288,7 +274,7 @@ export default function genStyleUtils<CompTokenMap extends Object>(
 
     // Return new style hook
     return (prefixCls: string, rootCls: string = prefixCls): UseComponentStyleResult => {
-      const [theme, realToken, hashId, token, cssVar] = useToken();
+      const { theme, realToken, hashId, token, cssVar } = useToken();
 
       const { getPrefixCls, iconPrefixCls = '', csp = {} } = useMergedConfigContext(getConfigProviderContext);
 
@@ -333,7 +319,7 @@ export default function genStyleUtils<CompTokenMap extends Object>(
         () => [
           {
             // Link
-            '&': genLinkStyle(token),
+            '&': options?.genLinkStyle?.(token) ?? {},
           },
         ],
       );
@@ -394,17 +380,17 @@ export default function genStyleUtils<CompTokenMap extends Object>(
           return [
             options.resetStyle === false
               ? null
-              : genCommonStyle(mergedToken, prefixCls, rootCls, options.resetFont),
+              : options?.genCommonStyle?.(mergedToken, prefixCls, rootCls, options.resetFont) ?? {},
             styleInterpolation,
           ];
         },
       );
 
-      return [wrapSSR as any, hashId];
+      return [wrapSSR, hashId];
     };
   }
 
-  function genSubStyleComponent<C extends OverrideComponent<CompTokenMap>>(
+  function genSubStyleComponent<C extends TokenMapKey<CompTokenMap>>(
     componentName: C | [C, string],
     styleFn: GenStyleFn<CompTokenMap, C>,
     getDefaultToken?: GetDefaultToken<CompTokenMap, C>,

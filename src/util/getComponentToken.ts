@@ -1,10 +1,15 @@
 import { warning } from 'rc-util';
-import type { GlobalToken } from '../interface';
-import type { OverrideComponent, ComponentTokenKey, ComponentToken } from './genStyleUtils';
+import type {
+  TokenMap,
+  TokenMapKey,
+  ComponentTokenKey,
+  ComponentToken,
+  OverrideTokenMap,
+} from '../interface';
 
-export default function getComponentToken<CompTokenMap, C extends OverrideComponent<CompTokenMap>>(
+export default function getComponentToken<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>>(
   component: C,
-  token: GlobalToken<CompTokenMap>,
+  token: OverrideTokenMap<CompTokenMap>,
   defaultToken: CompTokenMap[C],
   options?: {
     deprecatedTokens?: [ComponentTokenKey<CompTokenMap, C>, ComponentTokenKey<CompTokenMap, C>][];
@@ -33,7 +38,7 @@ export default function getComponentToken<CompTokenMap, C extends OverrideCompon
 
   // Remove same value as global token to minimize size
   Object.keys(mergedToken).forEach((key) => {
-    if (mergedToken[key] === token[key as keyof GlobalToken<CompTokenMap>]) {
+    if (mergedToken[key] === token[key as keyof CompTokenMap]) {
       delete mergedToken[key];
     }
   });

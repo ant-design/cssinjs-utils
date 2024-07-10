@@ -1,10 +1,10 @@
 import { merge as mergeToken } from './statistic';
-import type { GlobalToken } from '../interface';
-import type { OverrideComponent, GetDefaultToken, GetDefaultTokenFn } from './genStyleUtils';
+import type { GetDefaultToken, GetDefaultTokenFn } from './genStyleUtils';
+import type { OverrideTokenMap, TokenMap, TokenMapKey } from '../interface';
 
-export default function getDefaultComponentToken<CompTokenMap, C extends OverrideComponent<CompTokenMap>>(
+export default function getDefaultComponentToken<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>>(
   component: C,
-  token: GlobalToken<CompTokenMap>,
+  token: OverrideTokenMap<CompTokenMap>,
   getDefaultToken: GetDefaultToken<CompTokenMap, C>,
 ): any {
   if (typeof getDefaultToken === 'function') {

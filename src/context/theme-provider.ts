@@ -1,24 +1,30 @@
 import React from 'react';
-import type { Theme } from '@ant-design/cssinjs';
+import type { Theme, TokenType } from '@ant-design/cssinjs';
 
-import defaultSeedToken from '../themes/seed';
+import type { OverrideTokenMap, TokenMap } from '../interface';
 
-import type { AliasToken, OverrideToken, MapToken, SeedToken, GlobalToken } from '../interface';
-
-type ComponentsToken<CompTokenMap extends Object> = {
-  [key in keyof OverrideToken<CompTokenMap>]?: OverrideToken<CompTokenMap>[key] & {
-    theme?: Theme<SeedToken, MapToken>;
+export type TokenMapWithTheme<
+  CompTokenMap extends TokenMap,
+  DesignToken extends TokenType,
+  AliasToken extends TokenType,
+> = {
+    [key in keyof OverrideTokenMap<CompTokenMap>]?: OverrideTokenMap<CompTokenMap>[key] & {
+      theme?: Theme<DesignToken, AliasToken>;
+    };
   };
-};
 
-export interface DesignTokenProviderProps<CompTokenMap extends Object> {
-  token: GlobalToken<CompTokenMap>;
+export interface DesignTokenProviderProps<
+  CompTokenMap extends TokenMap,
+  DesignToken extends TokenType,
+  AliasToken extends TokenType,
+> {
+  token: OverrideTokenMap<CompTokenMap>;
+  realToken?: OverrideTokenMap<CompTokenMap>;
   /** Just merge `token` & `override` at top to save perf */
-  override: { override: Partial<AliasToken> } & ComponentsToken<CompTokenMap>;
-  realToken?: GlobalToken<CompTokenMap>;
+  override: { override: OverrideTokenMap<CompTokenMap> };
+  theme?: Theme<DesignToken, AliasToken>;
+  components?: TokenMapWithTheme<CompTokenMap, DesignToken, AliasToken>;
   hashId?: string;
-  theme?: Theme<SeedToken, MapToken>;
-  components?: ComponentsToken<CompTokenMap>;
   hashed?: string | boolean;
   cssVar?: {
     prefix?: string;
@@ -28,17 +34,27 @@ export interface DesignTokenProviderProps<CompTokenMap extends Object> {
 
 // To ensure snapshot stable. We disable hashed in test env.
 export const DefaultThemeProviderContextConfig = {
-  token: defaultSeedToken,
-  override: { override: defaultSeedToken },
+  token: {},
+  override: { override: {} },
   hashed: true,
 };
 
-export type GetThemeProviderContext<CompTokenMap extends Object> = () => [React.Context<DesignTokenProviderProps<CompTokenMap>>];
+export type GetThemeProviderContext<
+  CompTokenMap extends TokenMap,
+  DesignToken extends TokenType,
+  AliasToken extends TokenType,
+> = () => [React.Context<DesignTokenProviderProps<CompTokenMap, DesignToken, AliasToken>>];
 
-export function useMergedThemeContext<CompTokenMap extends Object> (getThemeProviderContext?: GetThemeProviderContext<CompTokenMap>) {
-  const DefaultThemeProviderContext = React.createContext<DesignTokenProviderProps<CompTokenMap>>(
-    DefaultThemeProviderContextConfig as DesignTokenProviderProps<CompTokenMap>
-  );
+export function useMergedThemeContext<
+  CompTokenMap extends TokenMap,
+  DesignToken extends TokenType,
+  AliasToken extends TokenType,
+>(getThemeProviderContext?: GetThemeProviderContext<CompTokenMap, DesignToken, AliasToken>) {
+  const DefaultThemeProviderContext = React.createContext<DesignTokenProviderProps<CompTokenMap, DesignToken, AliasToken>>({
+    token: {},
+    override: { override: {} },
+    hashed: true,
+  });
 
   const [ThemeProviderContext = {}] = getThemeProviderContext?.() ?? [];
 

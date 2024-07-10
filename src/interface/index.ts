@@ -1,28 +1,12 @@
-import type { CSSInterpolation, DerivativeFunc } from '@ant-design/cssinjs';
-
-import type { AliasToken } from './alias';
-import type { MapToken } from './maps';
-import type { SeedToken } from './seeds';
-
-export type MappingAlgorithm = DerivativeFunc<SeedToken, MapToken>;
-
-export type { AliasToken } from './alias';
-
 export type {
-  OverrideToken,
-  GlobalToken,
+  OverrideTokenMap,
+  TokenMap,
+  TokenMapKey,
+  GlobalTokenWithComponent,
+  ComponentToken,
+  ComponentTokenKey,
 } from './components';
 
-export type {
-  ColorMapToken,
-  ColorNeutralMapToken,
-  CommonMapToken,
-  FontMapToken,
-  HeightMapToken,
-  MapToken,
-  SizeMapToken,
-  StyleMapToken,
-} from './maps';
 export { PresetColors } from './presetColors';
 
 export type {
@@ -31,11 +15,5 @@ export type {
   PresetColorKey,
   PresetColorType,
 } from './presetColors';
-export type { SeedToken } from './seeds';
 
 export type UseComponentStyleResult = [(node: React.ReactNode) => React.ReactElement, string];
-
-export type GenerateStyle<
-  ComponentToken extends Object = AliasToken,
-  ReturnType = CSSInterpolation,
-> = (token: ComponentToken) => ReturnType;

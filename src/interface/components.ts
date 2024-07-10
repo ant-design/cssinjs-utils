@@ -1,8 +1,14 @@
-import type { AliasToken } from './alias';
+import type { TokenType } from '@ant-design/cssinjs';
 
-export type OverrideToken<CompTokenMap extends Object> = {
-  [key in keyof CompTokenMap]: Partial<CompTokenMap[key]> & Partial<AliasToken>;
-};
+export type TokenMap = Record<string, TokenType>;
 
-/** Final token which contains the components level override */
-export type GlobalToken<CompTokenMap extends Object> = AliasToken & CompTokenMap;
+export type TokenMapKey<CompTokenMap extends TokenMap> = Extract<keyof CompTokenMap, string>;
+
+export type OverrideTokenMap<CompTokenMap extends TokenMap> = Partial<CompTokenMap>;
+
+export type GlobalTokenWithComponent<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = CompTokenMap &
+  CompTokenMap[C];
+
+export type ComponentToken<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = Exclude<OverrideTokenMap<CompTokenMap>[C], undefined>;
+
+export type ComponentTokenKey<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = keyof ComponentToken<CompTokenMap, C>;
