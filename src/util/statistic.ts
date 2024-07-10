@@ -1,4 +1,3 @@
-import type { AnyObject } from '../_util/type';
 
 declare const CSSINJS_STATISTIC: any;
 
@@ -10,7 +9,7 @@ let recording = true;
  * This function will do as `Object.assign` in production. But will use Object.defineProperty:get to
  * pass all value access in development. To support statistic field usage with alias token.
  */
-export function merge<T extends AnyObject>(...objs: Partial<T>[]): T {
+export function merge<T extends Object>(...objs: Partial<T>[]): T {
   /* istanbul ignore next */
   if (!enableStatistic) {
     return Object.assign({}, ...objs);
@@ -49,7 +48,7 @@ export const _statistic_build_: typeof statistic = {};
 function noop() {}
 
 /** Statistic token usage case. Should use `merge` function if you do not want spread record. */
-const statisticToken = <T extends AnyObject>(token: T) => {
+const statisticToken = <T extends Object>(token: T) => {
   let tokenKeys: Set<string> | undefined;
   let proxy = token;
   let flush: (componentName: string, componentToken: Record<string, string | number>) => void =

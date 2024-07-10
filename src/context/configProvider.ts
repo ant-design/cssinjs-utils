@@ -1,7 +1,6 @@
 import React from 'react';
-import type { AnyObject } from '../_util/type';
 
-export interface DefaultConfigConsumerProps extends AnyObject {
+export interface DefaultConfigConsumerProps extends Object {
   getPrefixCls?: (suffixCls?: string, customizePrefixCls?: string) => string;
   iconPrefixCls?: string;
   csp?: CSPConfig;

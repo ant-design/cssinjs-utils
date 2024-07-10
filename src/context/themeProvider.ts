@@ -3,7 +3,6 @@ import type { Theme } from '@ant-design/cssinjs';
 
 import defaultSeedToken from '../themes/seed';
 
-import type { AnyObject } from '../_util/type';
 import type { AliasToken, OverrideToken, MapToken, SeedToken, GlobalToken } from '../interface';
 
 export const unitless: {
@@ -41,13 +40,13 @@ export const ignore: {
   motionUnit: true,
 };
 
-type ComponentsToken<CompTokenMap extends AnyObject> = {
+type ComponentsToken<CompTokenMap extends Object> = {
   [key in keyof OverrideToken<CompTokenMap>]?: OverrideToken<CompTokenMap>[key] & {
     theme?: Theme<SeedToken, MapToken>;
   };
 };
 
-export interface DesignTokenProviderProps<CompTokenMap extends AnyObject> {
+export interface DesignTokenProviderProps<CompTokenMap extends Object> {
   token: GlobalToken<CompTokenMap>;
   /** Just merge `token` & `override` at top to save perf */
   override: { override: Partial<AliasToken> } & ComponentsToken<CompTokenMap>;
@@ -69,9 +68,9 @@ export const DefaultThemeProviderContextConfig = {
   hashed: true,
 };
 
-export type GetThemeProviderContext<CompTokenMap extends AnyObject> = () => [React.Context<DesignTokenProviderProps<CompTokenMap>>];
+export type GetThemeProviderContext<CompTokenMap extends Object> = () => [React.Context<DesignTokenProviderProps<CompTokenMap>>];
 
-export function useMergedThemeContext<CompTokenMap extends AnyObject> (getThemeProviderContext?: GetThemeProviderContext<CompTokenMap>) {
+export function useMergedThemeContext<CompTokenMap extends Object> (getThemeProviderContext?: GetThemeProviderContext<CompTokenMap>) {
   const DefaultThemeProviderContext = React.createContext<DesignTokenProviderProps<CompTokenMap>>(
     DefaultThemeProviderContextConfig as DesignTokenProviderProps<CompTokenMap>
   );

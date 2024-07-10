@@ -3,7 +3,6 @@ import type { CSSInterpolation, DerivativeFunc } from '@ant-design/cssinjs';
 import type { AliasToken } from './alias';
 import type { MapToken } from './maps';
 import type { SeedToken } from './seeds';
-import type { AnyObject } from '../_util/type';
 
 export type MappingAlgorithm = DerivativeFunc<SeedToken, MapToken>;
 
@@ -37,6 +36,6 @@ export type { SeedToken } from './seeds';
 export type UseComponentStyleResult = [(node: React.ReactNode) => React.ReactElement, string];
 
 export type GenerateStyle<
-  ComponentToken extends AnyObject = AliasToken,
+  ComponentToken extends Object = AliasToken,
   ReturnType = CSSInterpolation,
 > = (token: ComponentToken) => ReturnType;

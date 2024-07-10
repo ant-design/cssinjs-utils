@@ -1,20 +1,19 @@
-import { TinyColor } from '@ant-design/fast-color';
+import { FastColor } from '@ant-design/fast-color';
 
 import type { AliasToken, MapToken, OverrideToken, SeedToken } from '../interface';
 import seedToken from '../themes/seed';
 import getAlphaColor from './getAlphaColor';
-import type { AnyObject } from '../_util/type';
 
 /** Raw merge of `@ant-design/cssinjs` token. Which need additional process */
 // type RawMergedToken = MapToken & { override: Partial<AliasToken> };
-type RawMergedToken<CompTokenMap extends AnyObject> = MapToken & OverrideToken<CompTokenMap> & { override: Partial<AliasToken> };
+type RawMergedToken<CompTokenMap extends Object> = MapToken & OverrideToken<CompTokenMap> & { override: Partial<AliasToken> };
 
 /**
  * Seed (designer) > Derivative (designer) > Alias (developer).
  *
  * Merge seed & derivative & override token and generate alias token for developer.
  */
-export default function formatToken<CompTokenMap extends AnyObject> (derivativeToken: RawMergedToken<CompTokenMap>): AliasToken {
+export default function formatToken<CompTokenMap extends Object> (derivativeToken: RawMergedToken<CompTokenMap>): AliasToken {
   const { override, ...restToken } = derivativeToken;
   const overrideTokens = { ...override };
 
@@ -169,9 +168,9 @@ export default function formatToken<CompTokenMap extends AnyObject> (derivativeT
 
     boxShadowPopoverArrow: '2px 2px 5px rgba(0, 0, 0, 0.05)',
     boxShadowCard: `
-      0 1px 2px -2px ${new TinyColor('rgba(0, 0, 0, 0.16)').toRgbString()},
-      0 3px 6px 0 ${new TinyColor('rgba(0, 0, 0, 0.12)').toRgbString()},
-      0 5px 12px 4px ${new TinyColor('rgba(0, 0, 0, 0.09)').toRgbString()}
+      0 1px 2px -2px ${new FastColor('rgba(0, 0, 0, 0.16)').toRgbString()},
+      0 3px 6px 0 ${new FastColor('rgba(0, 0, 0, 0.12)').toRgbString()},
+      0 5px 12px 4px ${new FastColor('rgba(0, 0, 0, 0.09)').toRgbString()}
     `,
     boxShadowDrawerRight: `
       -6px 0 16px 0 rgba(0, 0, 0, 0.08),

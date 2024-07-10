@@ -36,16 +36,15 @@ import getDefaultComponentToken from './getDefaultComponentToken';
 import statisticToken, { merge as mergeToken } from './statistic';
 
 import useUniqueMemo from '../_util/hooks/useUniqueMemo';
-import type { AnyObject } from '../_util/type';
 
 
-export type OverrideComponent<CompTokenMap extends AnyObject> = Extract<keyof CompTokenMap, string>;
+export type OverrideComponent<CompTokenMap extends Object> = Extract<keyof CompTokenMap, string>;
 
-export type GlobalTokenWithComponent<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = GlobalToken<CompTokenMap> &
+export type GlobalTokenWithComponent<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = GlobalToken<CompTokenMap> &
   CompTokenMap[C];
 
-export type ComponentToken<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = Exclude<OverrideToken<CompTokenMap>[C], undefined>;
-export type ComponentTokenKey<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = keyof ComponentToken<CompTokenMap, C>;
+export type ComponentToken<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = Exclude<OverrideToken<CompTokenMap>[C], undefined>;
+export type ComponentTokenKey<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = keyof ComponentToken<CompTokenMap, C>;
 
 export interface StyleInfo {
   hashId: string;
@@ -71,21 +70,21 @@ export type TokenWithCommonCls<T> = T & {
   antCls: string;
 } & CSSUtil;
 
-export type FullToken<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = TokenWithCommonCls<
+export type FullToken<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = TokenWithCommonCls<
   GlobalTokenWithComponent<CompTokenMap, C>
 >;
 
-export type GenStyleFn<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> = (
+export type GenStyleFn<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> = (
   token: FullToken<CompTokenMap, C>,
   info: StyleInfo,
 ) => CSSInterpolation;
 
 export type GetDefaultTokenFn<
-  CompTokenMap extends AnyObject,
+  CompTokenMap extends Object,
   C extends OverrideComponent<CompTokenMap>
 > = (token: AliasToken & Partial<CompTokenMap[C]>) => CompTokenMap[C];
 
-export type GetDefaultToken<CompTokenMap extends AnyObject, C extends OverrideComponent<CompTokenMap>> =
+export type GetDefaultToken<CompTokenMap extends Object, C extends OverrideComponent<CompTokenMap>> =
   | null
   | CompTokenMap[C]
   | GetDefaultTokenFn<CompTokenMap, C>
@@ -104,7 +103,7 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export default function genStyleUtils<CompTokenMap extends AnyObject>(
+export default function genStyleUtils<CompTokenMap extends Object>(
   getConfigProviderContext?: GetConfigProviderContext,
   getThemeProviderContext?: GetThemeProviderContext<CompTokenMap>,
 ) {
@@ -369,7 +368,7 @@ export default function genStyleUtils<CompTokenMap extends AnyObject>(
               )})`;
             });
           }
-          const mergedToken = mergeToken(
+          const mergedToken = mergeToken<any>(
             proxyToken,
             {
               componentCls,
