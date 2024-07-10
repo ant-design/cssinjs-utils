@@ -1,4 +1,4 @@
-import { TinyColor } from '@ctrl/tinycolor';
+import { TinyColor } from '@ant-design/fast-color';
 
 import type { AliasToken, MapToken, OverrideToken, SeedToken } from '../interface';
 import seedToken from '../themes/seed';
