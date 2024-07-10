@@ -5,8 +5,6 @@ import { token2CSSVar, useCSSVarRegister, useStyleRegister } from '@ant-design/c
 import type { CSSInterpolation, Theme } from '@ant-design/cssinjs';
 
 import {
-  unitless,
-  ignore,
   useMergedConfigContext,
   useMergedThemeContext,
 } from '../context';
@@ -166,7 +164,7 @@ export default function genStyleUtils<CompTokenMap extends Object>(
     // Fill unitless
     const originUnitless = options?.unitless || {};
     const compUnitless: any = {
-      ...unitless,
+      ...originUnitless,
       [prefixToken('zIndexPopup')]: true,
     };
     Object.keys(originUnitless).forEach((key) => {
@@ -200,12 +198,15 @@ export default function genStyleUtils<CompTokenMap extends Object>(
       unitless?: {
         [key in ComponentTokenKey<CompTokenMap, C>]: boolean;
       };
+      ignore?: {
+        [key in keyof AliasToken]?: boolean;
+      };
       deprecatedTokens?: [ComponentTokenKey<CompTokenMap, C>, ComponentTokenKey<CompTokenMap, C>][];
       injectStyle?: boolean;
       prefixToken: (key: string) => string;
     },
   ) {
-    const { unitless: compUnitless, injectStyle = true, prefixToken } = options;
+    const { unitless: compUnitless, injectStyle = true, prefixToken, ignore } = options;
 
     const CSSVarRegister: FC<CSSVarRegisterProps> = ({ rootCls, cssVar = {} }) => {
       const [, realToken] = useToken();

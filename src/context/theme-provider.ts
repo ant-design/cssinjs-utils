@@ -5,41 +5,6 @@ import defaultSeedToken from '../themes/seed';
 
 import type { AliasToken, OverrideToken, MapToken, SeedToken, GlobalToken } from '../interface';
 
-export const unitless: {
-  [key in keyof AliasToken]?: boolean;
-} = {
-  lineHeight: true,
-  lineHeightSM: true,
-  lineHeightLG: true,
-  lineHeightHeading1: true,
-  lineHeightHeading2: true,
-  lineHeightHeading3: true,
-  lineHeightHeading4: true,
-  lineHeightHeading5: true,
-  opacityLoading: true,
-  fontWeightStrong: true,
-  zIndexPopupBase: true,
-  zIndexBase: true,
-};
-
-export const ignore: {
-  [key in keyof AliasToken]?: boolean;
-} = {
-  size: true,
-  sizeSM: true,
-  sizeLG: true,
-  sizeMD: true,
-  sizeXS: true,
-  sizeXXS: true,
-  sizeMS: true,
-  sizeXL: true,
-  sizeXXL: true,
-  sizeUnit: true,
-  sizeStep: true,
-  motionBase: true,
-  motionUnit: true,
-};
-
 type ComponentsToken<CompTokenMap extends Object> = {
   [key in keyof OverrideToken<CompTokenMap>]?: OverrideToken<CompTokenMap>[key] & {
     theme?: Theme<SeedToken, MapToken>;
