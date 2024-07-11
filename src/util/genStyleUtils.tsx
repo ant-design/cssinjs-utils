@@ -34,7 +34,6 @@ import useUniqueMemo from '../_util/hooks/useUniqueMemo';
 import useDefaultCSP, { type UseCSP } from '../hooks/useCSP';
 import { type UsePrefix } from '../hooks/usePrefix';
 import { type UseToken } from '../hooks/useToken';
-import { type UseResetStyle } from '../hooks/useResetStyle';
 
 export interface StyleInfo {
   hashId: string;
