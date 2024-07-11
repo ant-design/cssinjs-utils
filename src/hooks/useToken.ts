@@ -36,17 +36,3 @@ export type UseToken<
   DesignToken extends TokenType,
   AliasToken extends TokenType,
 > = () => UseTokenReturn<CompTokenMap, DesignToken, AliasToken>;
-
-function useDefaultToken<
-  CompTokenMap extends TokenMap,
-  DesignToken extends TokenType,
-  AliasToken extends TokenType,
-> (): UseTokenReturn<CompTokenMap, DesignToken, AliasToken> {
-  return {
-    token: {},
-    override: { override: {} },
-    hashed: true,
-  }
-};
-
-export default useDefaultToken;

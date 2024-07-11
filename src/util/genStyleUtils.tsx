@@ -33,7 +33,7 @@ import statisticToken, { merge as mergeToken } from './statistic';
 import useUniqueMemo from '../_util/hooks/useUniqueMemo';
 import useDefaultCSP, { type UseCSP } from '../hooks/useCSP';
 import { type UsePrefix } from '../hooks/usePrefix';
-import useDefaultToken, { type UseToken } from '../hooks/useToken';
+import { type UseToken } from '../hooks/useToken';
 
 export interface StyleInfo {
   hashId: string;
@@ -99,15 +99,15 @@ export default function genStyleUtils<
   AliasToken extends TokenType,
 >(
   config: {
-    useCSP?: UseCSP;
     usePrefix: UsePrefix;
-    useToken?: UseToken<CompTokenMap, DesignToken, AliasToken>;
+    useToken: UseToken<CompTokenMap, DesignToken, AliasToken>;
+    useCSP?: UseCSP;
   }
 ) {
   // Dependency inversion for preparing basic config.
   const {
     useCSP = useDefaultCSP,
-    useToken = useDefaultToken,
+    useToken,
     usePrefix,
   } = config;
 
