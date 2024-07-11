@@ -19,7 +19,7 @@ nav:
 ## 如何使用
 ``` typescript
 import React from 'react';
-import { genStyleUtils } from '@ant-design/cssinjs-util';
+import { genStyleUtils } from '@ant-design/cssinjs-utils';
 
 // Step1: 定义组件 Token 映射
 interface YourCompTokenMap {

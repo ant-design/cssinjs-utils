@@ -1,5 +1,5 @@
 {
-  "name": "@ant-design/cssinjs-util",
+  "name": "@ant-design/cssinjs-utils",
   "version": "1.0.0",
   "description": "A cssinjs util library to support Ant Design (antd) and its ecosystem libraries.",
   "keywords": [

@@ -1,9 +1,9 @@
-# @ant-design/cssinjs-util
+# @ant-design/cssinjs-utils
 A cssinjs util library to support Ant Design (antd) and its ecosystem libraries.
 
 ## Install
 ``` bash
-npm i @ant-design/cssinjs-util --save
+npm i @ant-design/cssinjs-utils --save
 ```
 
 ## Usage

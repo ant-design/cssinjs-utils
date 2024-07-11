@@ -11,7 +11,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@@/*": [".dumi/tmp/*"],
-      "@ant-design/cssinjs-util": ["src/index.ts"]
+      "@ant-design/cssinjs-utils": ["src/index.ts"]
     }
   }
 }
