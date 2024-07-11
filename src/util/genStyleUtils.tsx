@@ -34,6 +34,7 @@ import useUniqueMemo from '../_util/hooks/useUniqueMemo';
 import useDefaultCSP, { type UseCSP } from '../hooks/useCSP';
 import { type UsePrefix } from '../hooks/usePrefix';
 import { type UseToken } from '../hooks/useToken';
+import { type UseResetStyle } from '../hooks/useResetStyle';
 
 export interface StyleInfo {
   hashId: string;
@@ -102,6 +103,7 @@ export default function genStyleUtils<
     usePrefix: UsePrefix;
     useToken: UseToken<CompTokenMap, DesignToken, AliasToken>;
     useCSP?: UseCSP;
+    useResetStyle?: UseResetStyle;
   }
 ) {
   // Dependency inversion for preparing basic config.
@@ -109,6 +111,7 @@ export default function genStyleUtils<
     useCSP = useDefaultCSP,
     useToken,
     usePrefix,
+    useResetStyle = () => {},
   } = config;
 
   function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
@@ -304,7 +307,6 @@ export default function genStyleUtils<
       unitless?: {
         [key in ComponentTokenKey<CompTokenMap, C>]: boolean;
       };
-      genLinkStyle?: (token: OverrideTokenMap<CompTokenMap>) => CSSObject;
       genCommonStyle?: (
         token: OverrideTokenMap<CompTokenMap>,
         componentPrefixCls: string,
@@ -350,6 +352,7 @@ export default function genStyleUtils<
 
         return genCalc(type, unitlessCssVar);
       }, [type, component, cssVar?.prefix]);
+
       const { max, min } = genMaxMin(type);
 
       // Shared config
@@ -368,18 +371,8 @@ export default function genStyleUtils<
         order: options.order || -999,
       };
 
-      // Generate style for all a tags in antd component.
-      useStyleRegister(
-        { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => [
-          {
-            // Link
-            '&': options?.genLinkStyle?.(token) ?? {},
-          },
-        ],
-      );
-
-      // Generate style for icons
+      // Generate style for all need reset tags.
+      useResetStyle(sharedConfig, { rootPrefixCls, iconPrefixCls });
 
       const wrapSSR = useStyleRegister(
         { ...sharedConfig, path: [concatComponent, prefixCls, iconPrefixCls] },
