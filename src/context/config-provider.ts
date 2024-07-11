@@ -16,10 +16,18 @@ export type GetConfigProviderContext = () => [React.Context<DefaultConfigConsume
 
 export function useMergedConfigContext(getConfigProviderContext?: GetConfigProviderContext) {
 
-  const [ConfigProviderContext = {}] = getConfigProviderContext?.() ?? [];
+  const [ConfigProviderContext] = getConfigProviderContext?.() ?? [];
 
-  return React.useContext({
-    ...DefaultConfigProviderContext,
-    ...ConfigProviderContext,
-  })
+  const defaultContext = React.useContext(DefaultConfigProviderContext);
+
+  const context = React.useContext<DefaultConfigConsumerProps>(ConfigProviderContext);
+
+  const mergedContext = React.useMemo(() => {
+    return {
+      ...defaultContext,
+      ...context
+    };
+  }, [context, defaultContext]);
+
+  return mergedContext;
 }

@@ -56,11 +56,19 @@ export function useMergedThemeContext<
     hashed: true,
   });
 
-  const [ThemeProviderContext = {}] = getThemeProviderContext?.() ?? [];
+  const [ThemeProviderContext] = getThemeProviderContext?.() ?? [];
 
-  return React.useContext({
-    ...DefaultThemeProviderContext,
-    ...ThemeProviderContext,
-  });
+  const defaultContext = React.useContext(DefaultThemeProviderContext);
+
+  const context = React.useContext(ThemeProviderContext);
+
+  const mergedContext = React.useMemo(() => {
+    return {
+      ...defaultContext,
+      ...context
+    };
+  }, [context, defaultContext]);
+
+  return mergedContext;
 }
 
