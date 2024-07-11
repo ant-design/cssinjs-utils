@@ -514,6 +514,5 @@ export default function genStyleUtils<
     genStyleHooks,
     genSubStyleComponent,
     genComponentStyleHook,
-    useToken,
   };
 }
