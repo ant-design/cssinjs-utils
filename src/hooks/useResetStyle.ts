@@ -1,4 +1,4 @@
-import { useStyleRegister } from '@ant-design/cssinjs';
+import type { useStyleRegister } from '@ant-design/cssinjs';
 import type { UsePrefix } from './usePrefix';
 
 export type UseResetStyle = (
