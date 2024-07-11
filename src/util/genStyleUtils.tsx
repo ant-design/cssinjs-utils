@@ -12,9 +12,6 @@ import {
   useStyleRegister,
 } from '@ant-design/cssinjs';
 
-import type { GetThemeProviderContext } from '../context';
-import { useMergedThemeContext } from '../context';
-
 import type {
   ComponentTokenKey,
   GlobalTokenWithComponent,
@@ -36,6 +33,7 @@ import statisticToken, { merge as mergeToken } from './statistic';
 import useUniqueMemo from '../_util/hooks/useUniqueMemo';
 import useDefaultCSP, { type UseCSP } from '../hooks/useCSP';
 import { type UsePrefix } from '../hooks/usePrefix';
+import useDefaultToken, { type UseToken } from '../hooks/useToken';
 
 export interface StyleInfo {
   hashId: string;
@@ -103,21 +101,15 @@ export default function genStyleUtils<
   config: {
     useCSP?: UseCSP;
     usePrefix: UsePrefix;
-  },
-  getThemeProviderContext?: GetThemeProviderContext<
-    CompTokenMap,
-    DesignToken,
-    AliasToken
-  >,
+    useToken?: UseToken<CompTokenMap, DesignToken, AliasToken>;
+  }
 ) {
   // Dependency inversion for preparing basic config.
-  const { useCSP = useDefaultCSP, usePrefix } = config;
-
-  function useToken() {
-    return useMergedThemeContext<CompTokenMap, DesignToken, AliasToken>(
-      getThemeProviderContext,
-    );
-  }
+  const {
+    useCSP = useDefaultCSP,
+    useToken = useDefaultToken,
+    usePrefix,
+  } = config;
 
   function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
     component: C | [C, string],
@@ -362,19 +354,19 @@ export default function genStyleUtils<
 
       // Shared config
       const sharedConfig: Omit<Parameters<typeof useStyleRegister>[0], 'path'> =
-        {
-          theme,
-          token,
-          hashId,
-          nonce: () => csp.nonce!,
-          clientOnly: options.clientOnly,
-          layer: {
-            name: 'antd',
-          },
+      {
+        theme,
+        token,
+        hashId,
+        nonce: () => csp.nonce!,
+        clientOnly: options.clientOnly,
+        layer: {
+          name: 'antd',
+        },
 
-          // antd is always at top of styles
-          order: options.order || -999,
-        };
+        // antd is always at top of styles
+        order: options.order || -999,
+      };
 
       // Generate style for all a tags in antd component.
       useStyleRegister(
@@ -448,11 +440,11 @@ export default function genStyleUtils<
             options.resetStyle === false
               ? null
               : options?.genCommonStyle?.(
-                  mergedToken,
-                  prefixCls,
-                  rootCls,
-                  options.resetFont,
-                ) ?? {},
+                mergedToken,
+                prefixCls,
+                rootCls,
+                options.resetFont,
+              ) ?? {},
             styleInterpolation,
           ];
         },
