@@ -32,10 +32,12 @@ interface YourCompTokenMap {
   // ...
 }
 
+// Step2: 定义设计 Token
 interface YourDesignTokenn {
   color?: string;
 }
 
+// Step3: 定义别名 Token
 interface YourAliasToken {
   colorFillContentHover?: string;
 }
