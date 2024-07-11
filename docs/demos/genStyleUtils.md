@@ -11,10 +11,14 @@ nav:
 ## 入参介绍
 
 ### `genStyleUtils<CompTokenMap>(getConfigProviderContext?, getThemeProviderContext?)`
-- `getConfigProviderContext`: 可选，用于获取配置上下文的钩子函数。
-- `getThemeProviderContext`: 可选，用于获取主题上下文的钩子函数。
+- `config`: 可选，配置
+  - `useCSP`: 使用 CSP 的钩子函数
+  - `usePrefix`: 使用样式前缀的钩子函数
+  - `useToken`: 使用 token 的钩子函数
 - `CompTokenMap`: 范型参数，表示组件 token 映射
-> 使用建议：为了更好的获得 TS 类型支持，建议您在使用 `genStyleUtils` 的时候传入范型参数 `CompTokenMap`
+- `DesignTokenn`: 范型参数，表示设计 token
+- `AliasToken`: 范型参数，表示别名 token
+> 使用建议：为了更好的获得 TS 类型支持，建议您在使用 `genStyleUtils` 的时候传入范型参数 `CompTokenMap` `DesignTokenn` `AliasToken`
 
 ## 如何使用
 ``` typescript
@@ -28,28 +32,30 @@ interface YourCompTokenMap {
   // ...
 }
 
-// Step2: 定义配置上下文
-function getConfigProviderContext () {
-  // ... do something
-  return React.createContext({
-    // ... your config context
-  });
+interface YourDesignTokenn {
+  color?: string;
 }
 
-// Step3: 定义主题上下文
-function getThemeProviderContext () {
-  // ...do something
-  return React.createContext({
-    // ... your theme context
-  });
+interface YourAliasToken {
+  colorFillContentHover?: string;
 }
+
 // Step4: 使用 `genStyleUtils` 生成工具函数集
 const {
   genStyleHooks,
   genComponentStyleHook,
   genSubStyleComponent,
-  useToken,
-} = genStyleUtils<YourCompTokenMap>(getConfigProviderContext, getThemeProviderContext);
+} = genStyleUtils<YourCompTokenMap, YourDesignTokenn, YourAliasToken>({
+  useCSP: () => {
+    // ...
+  },
+  usePrefix: () => {
+    // ...
+  },
+  useToken: () => {
+    // ...
+  },
+});
 ```
 
 ## 工具介绍
@@ -75,10 +81,6 @@ const {
 - `getDefaultToken`: 可选，用于检索默认标记的函数或值。
 - `options`: 可选，包含额外的配置选项如 `resetStyle`、`resetFont`、`deprecatedTokens`、`clientOnly` 等。
 
-### `useToken()`
-
- - 无参数。
-
 ## 示例用法
 
 ### `genStyleHooks`
@@ -101,10 +103,4 @@ const [wrapStyle, hashId] = useStyle('button');
 const SubButtonStyle = genSubStyleComponent('Button', styleFn, getDefaultToken, { resetFont: true });
 
 () => <SubButtonStyle prefixCls="sub-button" />;
-```
-
-### `useToken`
-
-```javascript
-const [theme, token, hashId, realToken, cssVar] = useToken();
 ```
