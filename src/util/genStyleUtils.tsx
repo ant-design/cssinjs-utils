@@ -93,7 +93,7 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export type GenResetStyles<CompTokenMap extends TokenMap> = (token: OverrideTokenMap<CompTokenMap>) => CSSInterpolation;
+export type GetResetStyles<CompTokenMap extends TokenMap> = (token: OverrideTokenMap<CompTokenMap>) => CSSInterpolation;
 
 export default function genStyleUtils<
   CompTokenMap extends TokenMap,
@@ -104,7 +104,7 @@ export default function genStyleUtils<
     usePrefix: UsePrefix;
     useToken: UseToken<CompTokenMap, DesignToken, AliasToken>;
     useCSP?: UseCSP;
-    genResetStyles?: GenResetStyles<CompTokenMap>,
+    getResetStyles?: GetResetStyles<CompTokenMap>,
   }
 ) {
   // Dependency inversion for preparing basic config.
@@ -112,7 +112,7 @@ export default function genStyleUtils<
     useCSP = useDefaultCSP,
     useToken,
     usePrefix,
-    genResetStyles,
+    getResetStyles,
   } = config;
 
   function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
@@ -375,7 +375,7 @@ export default function genStyleUtils<
       // Generate style for all need reset tags.
       useStyleRegister(
         { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => genResetStyles?.(token) ?? [],
+        () => getResetStyles?.(token) ?? [],
       );
 
       const wrapSSR = useStyleRegister(
