@@ -390,7 +390,7 @@ export default function genStyleUtils<
           const defaultComponentToken = getDefaultComponentToken<
             CompTokenMap,
             C
-          >(component, realToken, getDefaultToken);
+          >(component, realToken, getDefaultToken) ?? {};
 
           const componentCls = `.${prefixCls}`;
           const componentToken = getComponentToken<CompTokenMap, C>(
