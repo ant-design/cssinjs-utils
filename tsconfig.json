@@ -10,7 +10,8 @@
     "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": ["src/*"],
-      "@@/*": [".dumi/tmp/*"]
+      "@@/*": [".dumi/tmp/*"],
+      "@ant-design/cssinjs-utils": ["src/index.ts"]
     }
   }
 }
