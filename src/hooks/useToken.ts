@@ -17,8 +17,8 @@ export interface UseTokenReturn<
   DesignToken extends TokenType,
   AliasToken extends TokenType,
 > {
-  token: OverrideTokenMap<CompTokenMap>;
-  realToken?: OverrideTokenMap<CompTokenMap>;
+  token: Partial<AliasToken & CompTokenMap>;
+  realToken?: Partial<AliasToken & CompTokenMap>;
   /** Just merge `token` & `override` at top to save perf */
   override: { override: OverrideTokenMap<CompTokenMap> };
   theme?: Theme<DesignToken, AliasToken>;

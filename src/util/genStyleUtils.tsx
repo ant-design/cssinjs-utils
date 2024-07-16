@@ -93,7 +93,10 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken) => CSSInterpolation;
+export type GetResetStyles<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+> = (token: Partial<AliasToken & CompTokenMap>) => CSSInterpolation;
 
 export default function genStyleUtils<
   CompTokenMap extends TokenMap,
@@ -104,7 +107,7 @@ export default function genStyleUtils<
     usePrefix: UsePrefix;
     useToken: UseToken<CompTokenMap, DesignToken, AliasToken>;
     useCSP?: UseCSP;
-    getResetStyles?: GetResetStyles<AliasToken>,
+    getResetStyles?: GetResetStyles<CompTokenMap, AliasToken>,
   }
 ) {
   // Dependency inversion for preparing basic config.
