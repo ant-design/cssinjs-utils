@@ -12,13 +12,18 @@ export type TokenMapWithTheme<
     };
   };
 
+export type GlobalToken<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+> = Partial<AliasToken & CompTokenMap>;
+
 export interface UseTokenReturn<
   CompTokenMap extends TokenMap,
   DesignToken extends TokenType,
   AliasToken extends TokenType,
 > {
-  token: Partial<AliasToken & CompTokenMap>;
-  realToken?: Partial<AliasToken & CompTokenMap>;
+  token: GlobalToken<CompTokenMap, AliasToken>;
+  realToken?: GlobalToken<CompTokenMap, AliasToken>;
   /** Just merge `token` & `override` at top to save perf */
   override: { override: OverrideTokenMap<CompTokenMap> };
   theme?: Theme<DesignToken, AliasToken>;
