@@ -61,23 +61,27 @@ export type TokenWithCommonCls<T> = T & {
 
 export type FullToken<
   CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
   C extends TokenMapKey<CompTokenMap>,
-> = TokenWithCommonCls<GlobalTokenWithComponent<CompTokenMap, C>>;
+> = TokenWithCommonCls<GlobalTokenWithComponent<CompTokenMap, AliasToken, C>>;
 
 export type GenStyleFn<
   CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
   C extends TokenMapKey<CompTokenMap>,
-> = (token: FullToken<CompTokenMap, C>, info: StyleInfo) => CSSInterpolation;
+> = (token: FullToken<CompTokenMap, AliasToken, C>, info: StyleInfo) => CSSInterpolation;
 
 export type GetDefaultTokenFn<
   CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
   C extends TokenMapKey<CompTokenMap>,
-> = (token: Partial<CompTokenMap[C]>) => CompTokenMap[C];
+> = (token: AliasToken & Partial<CompTokenMap[C]>) => CompTokenMap[C];
 
 export type GetDefaultToken<
   CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
   C extends TokenMapKey<CompTokenMap>,
-> = null | CompTokenMap[C] | GetDefaultTokenFn<CompTokenMap, C>;
+> = null | CompTokenMap[C] | GetDefaultTokenFn<CompTokenMap, AliasToken, C>;
 
 export interface SubStyleComponentProps {
   prefixCls: string;
@@ -93,18 +97,21 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export type GetResetStyles<CompTokenMap extends TokenMap> = (token: OverrideTokenMap<CompTokenMap>) => CSSInterpolation;
+export type GetResetStyles<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+> = (token: Partial<AliasToken & CompTokenMap>) => CSSInterpolation;
 
 export default function genStyleUtils<
   CompTokenMap extends TokenMap,
-  DesignToken extends TokenType,
   AliasToken extends TokenType,
+  DesignToken extends TokenType,
 >(
   config: {
     usePrefix: UsePrefix;
-    useToken: UseToken<CompTokenMap, DesignToken, AliasToken>;
+    useToken: UseToken<CompTokenMap, AliasToken, DesignToken>;
     useCSP?: UseCSP;
-    getResetStyles?: GetResetStyles<CompTokenMap>,
+    getResetStyles?: GetResetStyles<CompTokenMap, AliasToken>,
   }
 ) {
   // Dependency inversion for preparing basic config.
@@ -117,20 +124,20 @@ export default function genStyleUtils<
 
   function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
     component: C | [C, string],
-    styleFn: GenStyleFn<CompTokenMap, C>,
-    getDefaultToken?: GetDefaultToken<CompTokenMap, C>,
+    styleFn: GenStyleFn<CompTokenMap, AliasToken, C>,
+    getDefaultToken?: GetDefaultToken<CompTokenMap, AliasToken, C>,
     options?: {
       resetStyle?: boolean;
       resetFont?: boolean;
       deprecatedTokens?: [
-        ComponentTokenKey<CompTokenMap, C>,
-        ComponentTokenKey<CompTokenMap, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
       ][];
       /**
        * Component tokens that do not need unit.
        */
       unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, C>]: boolean;
+        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
       };
       /**
        * Only use component style in client side. Ignore in SSR.
@@ -164,7 +171,7 @@ export default function genStyleUtils<
     };
     Object.keys(originUnitless).forEach((key) => {
       compUnitless[prefixToken(key)] =
-        originUnitless[key as keyof ComponentTokenKey<CompTokenMap, C>];
+        originUnitless[key as keyof ComponentTokenKey<CompTokenMap, AliasToken, C>];
     });
 
     // Options
@@ -198,17 +205,17 @@ export default function genStyleUtils<
 
   function genCSSVarRegister<C extends TokenMapKey<CompTokenMap>>(
     component: C,
-    getDefaultToken: GetDefaultToken<CompTokenMap, C> | undefined,
+    getDefaultToken: GetDefaultToken<CompTokenMap, AliasToken, C> | undefined,
     options: {
       unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, C>]: boolean;
+        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
       };
       ignore?: {
         [key in keyof AliasToken]?: boolean;
       };
       deprecatedTokens?: [
-        ComponentTokenKey<CompTokenMap, C>,
-        ComponentTokenKey<CompTokenMap, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
       ][];
       injectStyle?: boolean;
       prefixToken: (key: string) => string;
@@ -237,12 +244,12 @@ export default function genStyleUtils<
           scope: rootCls,
         },
         () => {
-          const defaultToken = getDefaultComponentToken<CompTokenMap, C>(
+          const defaultToken = getDefaultComponentToken<CompTokenMap, AliasToken, C>(
             component,
             realToken,
             getDefaultToken,
           );
-          const componentToken = getComponentToken<CompTokenMap, C>(
+          const componentToken = getComponentToken<CompTokenMap, AliasToken, C>(
             component,
             realToken,
             defaultToken,
@@ -286,15 +293,15 @@ export default function genStyleUtils<
 
   function genComponentStyleHook<C extends TokenMapKey<CompTokenMap>>(
     componentName: C | [C, string],
-    styleFn: GenStyleFn<CompTokenMap, C>,
-    getDefaultToken?: GetDefaultToken<CompTokenMap, C>,
+    styleFn: GenStyleFn<CompTokenMap, AliasToken, C>,
+    getDefaultToken?: GetDefaultToken<CompTokenMap, AliasToken, C>,
     options: {
       resetStyle?: boolean;
       resetFont?: boolean;
       // Deprecated token key map [["oldTokenKey", "newTokenKey"], ["oldTokenKey", "newTokenKey"]]
       deprecatedTokens?: [
-        ComponentTokenKey<CompTokenMap, C>,
-        ComponentTokenKey<CompTokenMap, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
       ][];
       /**
        * Only use component style in client side. Ignore in SSR.
@@ -306,10 +313,10 @@ export default function genStyleUtils<
       order?: number;
       injectStyle?: boolean;
       unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, C>]: boolean;
+        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
       };
       genCommonStyle?: (
-        token: OverrideTokenMap<CompTokenMap>,
+        token: OverrideTokenMap<CompTokenMap, AliasToken>,
         componentPrefixCls: string,
         rootCls?: string,
         resetFont?: boolean,
@@ -389,11 +396,12 @@ export default function genStyleUtils<
 
           const defaultComponentToken = getDefaultComponentToken<
             CompTokenMap,
+            AliasToken,
             C
           >(component, realToken, getDefaultToken) ?? {};
 
           const componentCls = `.${prefixCls}`;
-          const componentToken = getComponentToken<CompTokenMap, C>(
+          const componentToken = getComponentToken<CompTokenMap, AliasToken, C>(
             component,
             realToken,
             defaultComponentToken,
@@ -424,7 +432,7 @@ export default function genStyleUtils<
               min,
             },
             cssVar ? defaultComponentToken : componentToken,
-          ) as FullToken<CompTokenMap, C>;
+          );
 
           const styleInterpolation = styleFn(mergedToken, {
             hashId,
@@ -453,15 +461,15 @@ export default function genStyleUtils<
 
   function genSubStyleComponent<C extends TokenMapKey<CompTokenMap>>(
     componentName: C | [C, string],
-    styleFn: GenStyleFn<CompTokenMap, C>,
-    getDefaultToken?: GetDefaultToken<CompTokenMap, C>,
+    styleFn: GenStyleFn<CompTokenMap, AliasToken, C>,
+    getDefaultToken?: GetDefaultToken<CompTokenMap, AliasToken, C>,
     options: {
       resetStyle?: boolean;
       resetFont?: boolean;
       // Deprecated token key map [["oldTokenKey", "newTokenKey"], ["oldTokenKey", "newTokenKey"]]
       deprecatedTokens?: [
-        ComponentTokenKey<CompTokenMap, C>,
-        ComponentTokenKey<CompTokenMap, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
+        ComponentTokenKey<CompTokenMap, AliasToken, C>,
       ][];
       /**
        * Only use component style in client side. Ignore in SSR.
@@ -473,7 +481,7 @@ export default function genStyleUtils<
       order?: number;
       injectStyle?: boolean;
       unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, C>]: boolean;
+        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
       };
     } = {},
   ) {

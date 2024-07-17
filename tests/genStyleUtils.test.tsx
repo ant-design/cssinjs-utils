@@ -4,6 +4,10 @@ import { render, renderHook } from '@testing-library/react';
 import { genStyleUtils } from '../src'
 import type { CSSVarRegisterProps, SubStyleComponentProps } from '../src/util/genStyleUtils';
 
+interface TestCompTokenMap {
+  TestComponent: {}
+}
+
 describe('genStyleUtils', () => {
   const mockConfig = {
     usePrefix: jest.fn().mockReturnValue({
@@ -21,7 +25,7 @@ describe('genStyleUtils', () => {
     getResetStyles: jest.fn().mockReturnValue([]),
   };
 
-  const { genStyleHooks, genSubStyleComponent, genComponentStyleHook } = genStyleUtils(mockConfig);
+  const { genStyleHooks, genSubStyleComponent, genComponentStyleHook } = genStyleUtils<TestCompTokenMap, {}, {}>(mockConfig);
 
   describe('genStyleHooks', () => {
     it('should generate style hooks', () => {
