@@ -16,8 +16,8 @@ nav:
   - `usePrefix`: 使用样式前缀的钩子函数
   - `useToken`: 使用 token 的钩子函数
 - `CompTokenMap`: 范型参数，表示组件 token 映射
-- `DesignTokenn`: 范型参数，表示设计 token
 - `AliasToken`: 范型参数，表示别名 token
+- `DesignTokenn`: 范型参数，表示设计 token
 > 使用建议：为了更好的获得 TS 类型支持，建议您在使用 `genStyleUtils` 的时候传入范型参数 `CompTokenMap` `DesignTokenn` `AliasToken`
 
 ## 如何使用
