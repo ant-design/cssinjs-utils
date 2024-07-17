@@ -4,18 +4,23 @@ import type {
   TokenMapKey,
   ComponentTokenKey,
   ComponentToken,
-  OverrideTokenMap,
+  GlobalToken,
 } from '../interface';
+import type { TokenType } from '@ant-design/cssinjs';
 
-export default function getComponentToken<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>>(
+export default function getComponentToken<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+  C extends TokenMapKey<CompTokenMap>,
+>(
   component: C,
-  token: OverrideTokenMap<CompTokenMap>,
+  token: GlobalToken<CompTokenMap, AliasToken>,
   defaultToken: CompTokenMap[C],
   options?: {
-    deprecatedTokens?: [ComponentTokenKey<CompTokenMap, C>, ComponentTokenKey<CompTokenMap, C>][];
+    deprecatedTokens?: [ComponentTokenKey<CompTokenMap, AliasToken, C>, ComponentTokenKey<CompTokenMap, AliasToken, C>][];
   },
 ) {
-  const customToken = { ...(token[component] as ComponentToken<CompTokenMap, C>) };
+  const customToken = { ...(token[component] as ComponentToken<CompTokenMap, AliasToken, C>) };
   if (options?.deprecatedTokens) {
     const { deprecatedTokens } = options;
     deprecatedTokens.forEach(([oldTokenKey, newTokenKey]) => {

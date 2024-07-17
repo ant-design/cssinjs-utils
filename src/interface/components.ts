@@ -1,14 +1,35 @@
 import type { TokenType } from '@ant-design/cssinjs';
 
-export type TokenMap = Record<string, TokenType>;
+export type TokenMap = object;
 
 export type TokenMapKey<CompTokenMap extends TokenMap> = Extract<keyof CompTokenMap, string>;
 
-export type OverrideTokenMap<CompTokenMap extends TokenMap> = Partial<CompTokenMap>;
+export type GlobalToken<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+> = AliasToken & CompTokenMap;
 
-export type GlobalTokenWithComponent<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = CompTokenMap &
-  CompTokenMap[C];
+export type OverrideTokenMap<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+> = {
+    [key in keyof CompTokenMap]: Partial<CompTokenMap[key]> & Partial<AliasToken>;
+  };
 
-export type ComponentToken<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = Exclude<OverrideTokenMap<CompTokenMap>[C], undefined>;
+export type GlobalTokenWithComponent<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+  C extends TokenMapKey<CompTokenMap>
+> = GlobalToken<CompTokenMap, AliasToken> & CompTokenMap[C];
 
-export type ComponentTokenKey<CompTokenMap extends TokenMap, C extends TokenMapKey<CompTokenMap>> = keyof ComponentToken<CompTokenMap, C>;
+export type ComponentToken<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+  C extends TokenMapKey<CompTokenMap>
+> = Exclude<OverrideTokenMap<CompTokenMap, AliasToken>[C], undefined>;
+
+export type ComponentTokenKey<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+  C extends TokenMapKey<CompTokenMap>,
+> = keyof ComponentToken<CompTokenMap, AliasToken, C>;
