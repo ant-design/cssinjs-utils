@@ -102,6 +102,13 @@ export type GetResetStyles<
   AliasToken extends TokenType,
 > = (token: Partial<AliasToken & CompTokenMap>) => CSSInterpolation;
 
+export type GetCompUnitless<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+> = <C extends TokenMapKey<CompTokenMap>>(component: C | [C, string]) => {
+  [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
+}
+
 export default function genStyleUtils<
   CompTokenMap extends TokenMap,
   AliasToken extends TokenType,
@@ -112,6 +119,13 @@ export default function genStyleUtils<
     useToken: UseToken<CompTokenMap, AliasToken, DesignToken>;
     useCSP?: UseCSP;
     getResetStyles?: GetResetStyles<CompTokenMap, AliasToken>,
+    getCommonStyle?: (
+      token: OverrideTokenMap<CompTokenMap, AliasToken>,
+      componentPrefixCls: string,
+      rootCls?: string,
+      resetFont?: boolean,
+    ) => CSSObject;
+    getCompUnitless?: GetCompUnitless<CompTokenMap, AliasToken>,
   }
 ) {
   // Dependency inversion for preparing basic config.
@@ -120,6 +134,8 @@ export default function genStyleUtils<
     useToken,
     usePrefix,
     getResetStyles,
+    getCommonStyle,
+    getCompUnitless,
   } = config;
 
   function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
@@ -165,8 +181,11 @@ export default function genStyleUtils<
 
     // Fill unitless
     const originUnitless = options?.unitless || {};
+
+    const originCompUnitless = typeof getCompUnitless === 'function' ? getCompUnitless(component) : {};
+
     const compUnitless: any = {
-      ...originUnitless,
+      ...originCompUnitless,
       [prefixToken('zIndexPopup')]: true,
     };
     Object.keys(originUnitless).forEach((key) => {
@@ -315,12 +334,6 @@ export default function genStyleUtils<
       unitless?: {
         [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
       };
-      genCommonStyle?: (
-        token: OverrideTokenMap<CompTokenMap, AliasToken>,
-        componentPrefixCls: string,
-        rootCls?: string,
-        resetFont?: boolean,
-      ) => CSSObject;
     } = {},
   ) {
     const cells = (
@@ -364,8 +377,7 @@ export default function genStyleUtils<
       const { max, min } = genMaxMin(type);
 
       // Shared config
-      const sharedConfig: Omit<Parameters<typeof useStyleRegister>[0], 'path'> =
-      {
+      const sharedConfig: Omit<Parameters<typeof useStyleRegister>[0], 'path'> = {
         theme,
         token,
         hashId,
@@ -382,7 +394,7 @@ export default function genStyleUtils<
       // Generate style for all need reset tags.
       useStyleRegister(
         { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => getResetStyles?.(token) ?? [],
+        () => typeof getResetStyles === 'function' ? getResetStyles(token) : [],
       );
 
       const wrapSSR = useStyleRegister(
@@ -398,7 +410,7 @@ export default function genStyleUtils<
             CompTokenMap,
             AliasToken,
             C
-          >(component, realToken, getDefaultToken) ?? {};
+          >(component, realToken, getDefaultToken);
 
           const componentCls = `.${prefixCls}`;
           const componentToken = getComponentToken<CompTokenMap, AliasToken, C>(
@@ -410,7 +422,7 @@ export default function genStyleUtils<
             },
           );
 
-          if (cssVar) {
+          if (cssVar && typeof defaultComponentToken === 'object') {
             Object.keys(defaultComponentToken).forEach((key) => {
               defaultComponentToken[key] = `var(${token2CSSVar(
                 key,
@@ -423,8 +435,8 @@ export default function genStyleUtils<
             {
               componentCls,
               prefixCls,
-              iconCls: !!iconPrefixCls.length ? '' : `.${iconPrefixCls}`,
-              antCls: !!rootPrefixCls.length ? '' : `.${rootPrefixCls}`,
+              iconCls: `.${iconPrefixCls}`,
+              antCls: `.${rootPrefixCls}`,
               calc,
               // @ts-ignore
               max,
@@ -441,15 +453,18 @@ export default function genStyleUtils<
             iconPrefixCls,
           });
           flush(component, componentToken);
+          const commonStyle = typeof getCommonStyle === 'function'
+            ? getCommonStyle(
+              mergedToken,
+              prefixCls,
+              rootCls,
+              options.resetFont
+            )
+            : null;
           return [
             options.resetStyle === false
               ? null
-              : options?.genCommonStyle?.(
-                mergedToken,
-                prefixCls,
-                rootCls,
-                options.resetFont,
-              ) ?? {},
+              : commonStyle,
             styleInterpolation,
           ];
         },

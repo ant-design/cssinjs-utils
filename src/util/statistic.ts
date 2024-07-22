@@ -21,6 +21,8 @@ export function merge<CompTokenMap extends TokenMap>(...objs: Partial<CompTokenM
   const ret = {} as CompTokenMap;
 
   objs.forEach((obj) => {
+    if (typeof obj !== 'object') return;
+
     const keys = Object.keys(obj);
 
     keys.forEach((key) => {
