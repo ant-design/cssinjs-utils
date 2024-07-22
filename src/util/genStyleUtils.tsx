@@ -378,8 +378,7 @@ export default function genStyleUtils<
       const { max, min } = genMaxMin(type);
 
       // Shared config
-      const sharedConfig: Omit<Parameters<typeof useStyleRegister>[0], 'path'> =
-      {
+      const sharedConfig: Omit<Parameters<typeof useStyleRegister>[0], 'path'> = {
         theme,
         token,
         hashId,
@@ -396,7 +395,7 @@ export default function genStyleUtils<
       // Generate style for all need reset tags.
       useStyleRegister(
         { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => getResetStyles?.(token) ?? [],
+        () => typeof getResetStyles === 'function' ? getResetStyles(token) : [],
       );
 
       const wrapSSR = useStyleRegister(
@@ -412,7 +411,7 @@ export default function genStyleUtils<
             CompTokenMap,
             AliasToken,
             C
-          >(component, realToken, getDefaultToken) ?? {};
+          >(component, realToken, getDefaultToken);
 
           const componentCls = `.${prefixCls}`;
           const componentToken = getComponentToken<CompTokenMap, AliasToken, C>(
@@ -437,8 +436,8 @@ export default function genStyleUtils<
             {
               componentCls,
               prefixCls,
-              iconCls: !!iconPrefixCls.length ? '' : `.${iconPrefixCls}`,
-              antCls: !!rootPrefixCls.length ? '' : `.${rootPrefixCls}`,
+              iconCls: `.${iconPrefixCls}`,
+              antCls: `.${rootPrefixCls}`,
               calc,
               // @ts-ignore
               max,
@@ -455,15 +454,18 @@ export default function genStyleUtils<
             iconPrefixCls,
           });
           flush(component, componentToken);
-          return [
-            options.resetStyle === false
-              ? null
-              : getCommonStyle?.(
+          const commonStyle = typeof getCommonStyle === 'function'
+            ? getCommonStyle(
                 mergedToken,
                 prefixCls,
                 rootCls,
-                options.resetFont,
-              ) ?? {},
+                options.resetFont
+              )
+            : null;
+          return [
+            options.resetStyle === false
+              ? null
+              : commonStyle,
             styleInterpolation,
           ];
         },
