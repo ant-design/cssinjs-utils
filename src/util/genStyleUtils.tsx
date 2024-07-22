@@ -102,6 +102,13 @@ export type GetResetStyles<
   AliasToken extends TokenType,
 > = (token: Partial<AliasToken & CompTokenMap>) => CSSInterpolation;
 
+export type GetCompUnitless<
+  CompTokenMap extends TokenMap,
+  AliasToken extends TokenType,
+> = <C extends TokenMapKey<CompTokenMap>>(component: C | [C, string]) => {
+  [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
+}
+
 export default function genStyleUtils<
   CompTokenMap extends TokenMap,
   AliasToken extends TokenType,
@@ -118,6 +125,7 @@ export default function genStyleUtils<
       rootCls?: string,
       resetFont?: boolean,
     ) => CSSObject;
+    getCompUnitless?: GetCompUnitless<CompTokenMap, AliasToken>,
   }
 ) {
   // Dependency inversion for preparing basic config.
@@ -127,6 +135,7 @@ export default function genStyleUtils<
     usePrefix,
     getResetStyles,
     getCommonStyle,
+    getCompUnitless,
   } = config;
 
   function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
@@ -172,21 +181,11 @@ export default function genStyleUtils<
 
     // Fill unitless
     const originUnitless = options?.unitless || {};
+
+    const originCompUnitless = typeof getCompUnitless === 'function' ? getCompUnitless(component) : {};
+
     const compUnitless: any = {
-      // Todo: ...unitless,
-      // ...originUnitless,
-      lineHeight: true,
-      lineHeightSM: true,
-      lineHeightLG: true,
-      lineHeightHeading1: true,
-      lineHeightHeading2: true,
-      lineHeightHeading3: true,
-      lineHeightHeading4: true,
-      lineHeightHeading5: true,
-      opacityLoading: true,
-      fontWeightStrong: true,
-      zIndexPopupBase: true,
-      zIndexBase: true,
+      ...originCompUnitless,
       [prefixToken('zIndexPopup')]: true,
     };
     Object.keys(originUnitless).forEach((key) => {
@@ -456,11 +455,11 @@ export default function genStyleUtils<
           flush(component, componentToken);
           const commonStyle = typeof getCommonStyle === 'function'
             ? getCommonStyle(
-                mergedToken,
-                prefixCls,
-                rootCls,
-                options.resetFont
-              )
+              mergedToken,
+              prefixCls,
+              rootCls,
+              options.resetFont
+            )
             : null;
           return [
             options.resetStyle === false
