@@ -422,7 +422,7 @@ export default function genStyleUtils<
             },
           );
 
-          if (cssVar) {
+          if (cssVar && typeof defaultComponentToken === 'object') {
             Object.keys(defaultComponentToken).forEach((key) => {
               defaultComponentToken[key] = `var(${token2CSSVar(
                 key,
