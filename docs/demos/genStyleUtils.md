@@ -17,6 +17,7 @@ nav:
   - `useToken`: 使用 token 的钩子函数
   - `getResetStyles`: 获取重置样式函数
   - `getCommonStyle`: 获取通用样式函数
+  - `getCompUnitless`: 获取组件无单位样式函数
 - `CompTokenMap`: 范型参数，表示组件 token 映射
 - `AliasToken`: 范型参数，表示别名 token
 - `DesignToken`: 范型参数，表示设计 token
