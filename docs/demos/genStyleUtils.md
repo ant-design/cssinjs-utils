@@ -10,11 +10,13 @@ nav:
 
 ## 入参介绍
 
-### `genStyleUtils<CompTokenMap>(getConfigProviderContext?, getThemeProviderContext?)`
+### `genStyleUtils<CompTokenMap, AliasToken, DesignToken>(config)`
 - `config`: 可选，配置
   - `useCSP`: 使用 CSP 的钩子函数
   - `usePrefix`: 使用样式前缀的钩子函数
   - `useToken`: 使用 token 的钩子函数
+  - `getResetStyles`: 获取重置样式函数
+  - `getCommonStyle`: 获取通用样式函数
 - `CompTokenMap`: 范型参数，表示组件 token 映射
 - `AliasToken`: 范型参数，表示别名 token
 - `DesignToken`: 范型参数，表示设计 token

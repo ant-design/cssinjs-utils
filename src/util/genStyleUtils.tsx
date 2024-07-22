@@ -112,6 +112,12 @@ export default function genStyleUtils<
     useToken: UseToken<CompTokenMap, AliasToken, DesignToken>;
     useCSP?: UseCSP;
     getResetStyles?: GetResetStyles<CompTokenMap, AliasToken>,
+    getCommonStyle?: (
+      token: OverrideTokenMap<CompTokenMap, AliasToken>,
+      componentPrefixCls: string,
+      rootCls?: string,
+      resetFont?: boolean,
+    ) => CSSObject;
   }
 ) {
   // Dependency inversion for preparing basic config.
@@ -120,6 +126,7 @@ export default function genStyleUtils<
     useToken,
     usePrefix,
     getResetStyles,
+    getCommonStyle,
   } = config;
 
   function genStyleHooks<C extends TokenMapKey<CompTokenMap>>(
@@ -166,7 +173,20 @@ export default function genStyleUtils<
     // Fill unitless
     const originUnitless = options?.unitless || {};
     const compUnitless: any = {
-      ...originUnitless,
+      // Todo: ...unitless,
+      // ...originUnitless,
+      lineHeight: true,
+      lineHeightSM: true,
+      lineHeightLG: true,
+      lineHeightHeading1: true,
+      lineHeightHeading2: true,
+      lineHeightHeading3: true,
+      lineHeightHeading4: true,
+      lineHeightHeading5: true,
+      opacityLoading: true,
+      fontWeightStrong: true,
+      zIndexPopupBase: true,
+      zIndexBase: true,
       [prefixToken('zIndexPopup')]: true,
     };
     Object.keys(originUnitless).forEach((key) => {
@@ -315,12 +335,6 @@ export default function genStyleUtils<
       unitless?: {
         [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
       };
-      genCommonStyle?: (
-        token: OverrideTokenMap<CompTokenMap, AliasToken>,
-        componentPrefixCls: string,
-        rootCls?: string,
-        resetFont?: boolean,
-      ) => CSSObject;
     } = {},
   ) {
     const cells = (
@@ -444,7 +458,7 @@ export default function genStyleUtils<
           return [
             options.resetStyle === false
               ? null
-              : options?.genCommonStyle?.(
+              : getCommonStyle?.(
                 mergedToken,
                 prefixCls,
                 rootCls,
