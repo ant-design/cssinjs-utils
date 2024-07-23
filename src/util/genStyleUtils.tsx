@@ -15,7 +15,6 @@ import {
 import type {
   ComponentTokenKey,
   GlobalTokenWithComponent,
-  OverrideTokenMap,
   TokenMap,
   TokenMapKey,
   UseComponentStyleResult,
@@ -98,9 +97,8 @@ export type CSSVarRegisterProps = {
 };
 
 export type GetResetStyles<
-  CompTokenMap extends TokenMap,
   AliasToken extends TokenType,
-> = (token: Partial<AliasToken & CompTokenMap>) => CSSInterpolation;
+> = (token: AliasToken) => CSSInterpolation;
 
 export type GetCompUnitless<
   CompTokenMap extends TokenMap,
@@ -118,9 +116,9 @@ export default function genStyleUtils<
     usePrefix: UsePrefix;
     useToken: UseToken<CompTokenMap, AliasToken, DesignToken>;
     useCSP?: UseCSP;
-    getResetStyles?: GetResetStyles<CompTokenMap, AliasToken>,
+    getResetStyles?: GetResetStyles<AliasToken>,
     getCommonStyle?: (
-      token: OverrideTokenMap<CompTokenMap, AliasToken>,
+      token: AliasToken,
       componentPrefixCls: string,
       rootCls?: string,
       resetFont?: boolean,
