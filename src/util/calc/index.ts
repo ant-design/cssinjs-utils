@@ -4,9 +4,7 @@ import NumCalculator from './NumCalculator';
 
 const genCalc = (type: 'css' | 'js', unitlessCssVar: Set<string>) => {
   const Calculator = type === 'css' ? CSSCalculator : NumCalculator;
-
-  return (num: number | string | AbstractCalculator) =>
-    new Calculator(num, unitlessCssVar);
+  return (num: number | string | AbstractCalculator) => new Calculator(num, unitlessCssVar);
 };
 
 export default genCalc;

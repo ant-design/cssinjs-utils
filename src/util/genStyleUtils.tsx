@@ -1,16 +1,8 @@
-import type { ComponentType, FC, ReactElement } from 'react';
 import React from 'react';
 
-import type {
-  CSSInterpolation,
-  CSSObject,
-  TokenType,
-} from '@ant-design/cssinjs';
-import {
-  token2CSSVar,
-  useCSSVarRegister,
-  useStyleRegister,
-} from '@ant-design/cssinjs';
+import type { CSSInterpolation, CSSObject, TokenType } from '@ant-design/cssinjs';
+
+import { token2CSSVar, useCSSVarRegister, useStyleRegister } from '@ant-design/cssinjs';
 
 import type {
   ComponentTokenKey,
@@ -30,9 +22,10 @@ import genMaxMin from './maxmin';
 import statisticToken, { merge as mergeToken } from './statistic';
 
 import useUniqueMemo from '../_util/hooks/useUniqueMemo';
-import useDefaultCSP, { type UseCSP } from '../hooks/useCSP';
-import { type UsePrefix } from '../hooks/usePrefix';
-import { type UseToken } from '../hooks/useToken';
+import useDefaultCSP from '../hooks/useCSP';
+import type { UseCSP } from '../hooks/useCSP';
+import type { UsePrefix } from '../hooks/usePrefix';
+import type { UseToken } from '../hooks/useToken';
 
 export interface StyleInfo {
   hashId: string;
@@ -96,36 +89,33 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export type GetResetStyles<
-  AliasToken extends TokenType,
-> = (token: AliasToken) => CSSInterpolation;
+export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken) => CSSInterpolation;
 
-export type GetCompUnitless<
-  CompTokenMap extends TokenMap,
-  AliasToken extends TokenType,
-> = <C extends TokenMapKey<CompTokenMap>>(component: C | [C, string]) => {
+export type GetCompUnitless<CompTokenMap extends TokenMap, AliasToken extends TokenType> = <
+  C extends TokenMapKey<CompTokenMap>,
+>(
+  component: C | [C, string],
+) => {
   [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
-}
+};
 
-export default function genStyleUtils<
+function genStyleUtils<
   CompTokenMap extends TokenMap,
   AliasToken extends TokenType,
   DesignToken extends TokenType,
->(
-  config: {
-    usePrefix: UsePrefix;
-    useToken: UseToken<CompTokenMap, AliasToken, DesignToken>;
-    useCSP?: UseCSP;
-    getResetStyles?: GetResetStyles<AliasToken>,
-    getCommonStyle?: (
-      token: AliasToken,
-      componentPrefixCls: string,
-      rootCls?: string,
-      resetFont?: boolean,
-    ) => CSSObject;
-    getCompUnitless?: GetCompUnitless<CompTokenMap, AliasToken>,
-  }
-) {
+>(config: {
+  usePrefix: UsePrefix;
+  useToken: UseToken<CompTokenMap, AliasToken, DesignToken>;
+  useCSP?: UseCSP;
+  getResetStyles?: GetResetStyles<AliasToken>;
+  getCommonStyle?: (
+    token: AliasToken,
+    componentPrefixCls: string,
+    rootCls?: string,
+    resetFont?: boolean,
+  ) => CSSObject;
+  getCompUnitless?: GetCompUnitless<CompTokenMap, AliasToken>;
+}) {
   // Dependency inversion for preparing basic config.
   const {
     useCSP = useDefaultCSP,
@@ -172,15 +162,14 @@ export default function genStyleUtils<
     const componentName = Array.isArray(component) ? component[0] : component;
 
     function prefixToken(key: string) {
-      return `${String(componentName)}${key
-        .slice(0, 1)
-        .toUpperCase()}${key.slice(1)}`;
+      return `${String(componentName)}${key.slice(0, 1).toUpperCase()}${key.slice(1)}`;
     }
 
     // Fill unitless
     const originUnitless = options?.unitless || {};
 
-    const originCompUnitless = typeof getCompUnitless === 'function' ? getCompUnitless(component) : {};
+    const originCompUnitless =
+      typeof getCompUnitless === 'function' ? getCompUnitless(component) : {};
 
     const compUnitless: any = {
       ...originCompUnitless,
@@ -199,18 +188,9 @@ export default function genStyleUtils<
     };
 
     // Hooks
-    const useStyle = genComponentStyleHook(
-      component,
-      styleFn,
-      getDefaultToken,
-      mergedOptions,
-    );
+    const useStyle = genComponentStyleHook(component, styleFn, getDefaultToken, mergedOptions);
 
-    const useCSSVar = genCSSVarRegister(
-      componentName,
-      getDefaultToken,
-      mergedOptions,
-    );
+    const useCSSVar = genCSSVarRegister(componentName, getDefaultToken, mergedOptions);
 
     return (prefixCls: string, rootCls: string = prefixCls) => {
       const [, hashId] = useStyle(prefixCls, rootCls);
@@ -238,17 +218,9 @@ export default function genStyleUtils<
       prefixToken: (key: string) => string;
     },
   ) {
-    const {
-      unitless: compUnitless,
-      injectStyle = true,
-      prefixToken,
-      ignore,
-    } = options;
+    const { unitless: compUnitless, injectStyle = true, prefixToken, ignore } = options;
 
-    const CSSVarRegister: FC<CSSVarRegisterProps> = ({
-      rootCls,
-      cssVar = {},
-    }) => {
+    const CSSVarRegister: React.FC<Readonly<CSSVarRegisterProps>> = ({ rootCls, cssVar = {} }) => {
       const { realToken } = useToken();
       useCSSVarRegister(
         {
@@ -288,14 +260,10 @@ export default function genStyleUtils<
       const { cssVar } = useToken();
 
       return [
-        (node: ReactElement): ReactElement =>
+        (node: React.ReactElement): React.ReactElement =>
           injectStyle && cssVar ? (
             <>
-              <CSSVarRegister
-                rootCls={rootCls}
-                cssVar={cssVar}
-                component={component}
-              />
+              <CSSVarRegister rootCls={rootCls} cssVar={cssVar} component={component} />
               {node}
             </>
           ) : (
@@ -335,19 +303,14 @@ export default function genStyleUtils<
     } = {},
   ) {
     const cells = (
-      Array.isArray(componentName)
-        ? componentName
-        : [componentName, componentName]
+      Array.isArray(componentName) ? componentName : [componentName, componentName]
     ) as [C, string];
 
     const [component] = cells;
     const concatComponent = cells.join('-');
 
     // Return new style hook
-    return (
-      prefixCls: string,
-      rootCls: string = prefixCls,
-    ): UseComponentStyleResult => {
+    return (prefixCls: string, rootCls: string = prefixCls): UseComponentStyleResult => {
       const { theme, realToken, hashId, token, cssVar } = useToken();
 
       const { rootPrefixCls, iconPrefixCls } = usePrefix();
@@ -363,9 +326,7 @@ export default function genStyleUtils<
             // Some component proxy the AliasToken (e.g. Image) and some not (e.g. Modal)
             // We should both pass in `unitlessCssVar` to make sure the CSSVar can be unitless.
             unitlessCssVar.add(token2CSSVar(key, cssVar.prefix));
-            unitlessCssVar.add(
-              token2CSSVar(key, getCompVarPrefix(component, cssVar.prefix)),
-            );
+            unitlessCssVar.add(token2CSSVar(key, getCompVarPrefix(component, cssVar.prefix)));
           });
         }
 
@@ -392,7 +353,7 @@ export default function genStyleUtils<
       // Generate style for all need reset tags.
       useStyleRegister(
         { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => typeof getResetStyles === 'function' ? getResetStyles(token) : [],
+        () => (typeof getResetStyles === 'function' ? getResetStyles(token) : []),
       );
 
       const wrapSSR = useStyleRegister(
@@ -404,23 +365,21 @@ export default function genStyleUtils<
 
           const { token: proxyToken, flush } = statisticToken(token);
 
-          const defaultComponentToken = getDefaultComponentToken<
-            CompTokenMap,
-            AliasToken,
-            C
-          >(component, realToken, getDefaultToken);
+          const defaultComponentToken = getDefaultComponentToken<CompTokenMap, AliasToken, C>(
+            component,
+            realToken,
+            getDefaultToken,
+          );
 
           const componentCls = `.${prefixCls}`;
           const componentToken = getComponentToken<CompTokenMap, AliasToken, C>(
             component,
             realToken,
             defaultComponentToken,
-            {
-              deprecatedTokens: options.deprecatedTokens,
-            },
+            { deprecatedTokens: options.deprecatedTokens },
           );
 
-          if (cssVar && typeof defaultComponentToken === 'object') {
+          if (cssVar && defaultComponentToken && typeof defaultComponentToken === 'object') {
             Object.keys(defaultComponentToken).forEach((key) => {
               defaultComponentToken[key] = `var(${token2CSSVar(
                 key,
@@ -451,20 +410,11 @@ export default function genStyleUtils<
             iconPrefixCls,
           });
           flush(component, componentToken);
-          const commonStyle = typeof getCommonStyle === 'function'
-            ? getCommonStyle(
-              mergedToken,
-              prefixCls,
-              rootCls,
-              options.resetFont
-            )
-            : null;
-          return [
-            options.resetStyle === false
-              ? null
-              : commonStyle,
-            styleInterpolation,
-          ];
+          const commonStyle =
+            typeof getCommonStyle === 'function'
+              ? getCommonStyle(mergedToken, prefixCls, rootCls, options.resetFont)
+              : null;
+          return [options.resetStyle === false ? null : commonStyle, styleInterpolation];
         },
       );
 
@@ -498,20 +448,15 @@ export default function genStyleUtils<
       };
     } = {},
   ) {
-    const useStyle = genComponentStyleHook(
-      componentName,
-      styleFn,
-      getDefaultToken,
-      {
-        resetStyle: false,
+    const useStyle = genComponentStyleHook(componentName, styleFn, getDefaultToken, {
+      resetStyle: false,
 
-        // Sub Style should default after root one
-        order: -998,
-        ...options,
-      },
-    );
+      // Sub Style should default after root one
+      order: -998,
+      ...options,
+    });
 
-    const StyledComponent: ComponentType<SubStyleComponentProps> = ({
+    const StyledComponent: React.ComponentType<SubStyleComponentProps> = ({
       prefixCls,
       rootCls = prefixCls,
     }: SubStyleComponentProps) => {
@@ -528,9 +473,7 @@ export default function genStyleUtils<
     return StyledComponent;
   }
 
-  return {
-    genStyleHooks,
-    genSubStyleComponent,
-    genComponentStyleHook,
-  };
+  return { genStyleHooks, genSubStyleComponent, genComponentStyleHook };
 }
+
+export default genStyleUtils;

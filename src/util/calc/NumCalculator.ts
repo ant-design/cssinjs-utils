@@ -1,6 +1,6 @@
 import AbstractCalculator from './calculator';
 
-export default class NumCalculator extends AbstractCalculator {
+class NumCalculator extends AbstractCalculator {
   result: number = 0;
 
   constructor(num: number | string | AbstractCalculator) {
@@ -52,3 +52,5 @@ export default class NumCalculator extends AbstractCalculator {
     return this.result;
   }
 }
+
+export default NumCalculator;

@@ -18,10 +18,7 @@ export default class CSSCalculator extends AbstractCalculator {
 
   lowPriority?: boolean;
 
-  constructor(
-    num: number | string | AbstractCalculator,
-    unitlessCssVar: Set<string>,
-  ) {
+  constructor(num: number | string | AbstractCalculator, unitlessCssVar: Set<string>) {
     super();
 
     const numType = typeof num;
@@ -93,11 +90,7 @@ export default class CSSCalculator extends AbstractCalculator {
     let mergedUnit: boolean = true;
     if (typeof cssUnit === 'boolean') {
       mergedUnit = cssUnit;
-    } else if (
-      Array.from(this.unitlessCssVar).some((cssVar) =>
-        this.result.includes(cssVar),
-      )
-    ) {
+    } else if (Array.from(this.unitlessCssVar).some((cssVar) => this.result.includes(cssVar))) {
       mergedUnit = false;
     }
 

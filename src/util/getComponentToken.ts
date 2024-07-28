@@ -8,7 +8,7 @@ import type {
 } from '../interface';
 import type { TokenType } from '@ant-design/cssinjs';
 
-export default function getComponentToken<
+function getComponentToken<
   CompTokenMap extends TokenMap,
   AliasToken extends TokenType,
   C extends TokenMapKey<CompTokenMap>,
@@ -17,10 +17,15 @@ export default function getComponentToken<
   token: GlobalToken<CompTokenMap, AliasToken>,
   defaultToken: CompTokenMap[C],
   options?: {
-    deprecatedTokens?: [ComponentTokenKey<CompTokenMap, AliasToken, C>, ComponentTokenKey<CompTokenMap, AliasToken, C>][];
+    deprecatedTokens?: [
+      ComponentTokenKey<CompTokenMap, AliasToken, C>,
+      ComponentTokenKey<CompTokenMap, AliasToken, C>,
+    ][];
   },
 ) {
-  const customToken = { ...(token[component] as ComponentToken<CompTokenMap, AliasToken, C>) };
+  const customToken = {
+    ...(token[component] as ComponentToken<CompTokenMap, AliasToken, C>),
+  };
   if (options?.deprecatedTokens) {
     const { deprecatedTokens } = options;
     deprecatedTokens.forEach(([oldTokenKey, newTokenKey]) => {
@@ -49,4 +54,6 @@ export default function getComponentToken<
   });
 
   return mergedToken;
-};
+}
+
+export default getComponentToken;

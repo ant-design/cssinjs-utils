@@ -10,7 +10,9 @@ let recording = true;
  * This function will do as `Object.assign` in production. But will use Object.defineProperty:get to
  * pass all value access in development. To support statistic field usage with alias token.
  */
-export function merge<CompTokenMap extends TokenMap>(...objs: Partial<CompTokenMap>[]): CompTokenMap {
+export function merge<CompTokenMap extends TokenMap>(
+  ...objs: Partial<CompTokenMap>[]
+): CompTokenMap {
   /* istanbul ignore next */
   if (!enableStatistic) {
     return Object.assign({}, ...objs);
@@ -21,7 +23,9 @@ export function merge<CompTokenMap extends TokenMap>(...objs: Partial<CompTokenM
   const ret = {} as CompTokenMap;
 
   objs.forEach((obj) => {
-    if (typeof obj !== 'object') return;
+    if (typeof obj !== 'object') {
+      return;
+    }
 
     const keys = Object.keys(obj);
 
@@ -29,7 +33,7 @@ export function merge<CompTokenMap extends TokenMap>(...objs: Partial<CompTokenM
       Object.defineProperty(ret, key, {
         configurable: true,
         enumerable: true,
-        get: () => (obj)[key],
+        get: () => obj[key],
       });
     });
   });
@@ -63,7 +67,7 @@ const statisticToken = <CompTokenMap extends TokenMap>(token: CompTokenMap) => {
     proxy = new Proxy(token, {
       get(obj: any, prop: any) {
         if (recording) {
-          tokenKeys!.add(prop);
+          tokenKeys?.add(prop);
         }
         return obj[prop];
       },

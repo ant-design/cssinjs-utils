@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, renderHook } from '@testing-library/react';
 
-import { genStyleUtils } from '../src'
+import { genStyleUtils } from '../src';
 import type { CSSVarRegisterProps, SubStyleComponentProps } from '../src/util/genStyleUtils';
 
 interface TestCompTokenMap {
-  TestComponent: {}
+  TestComponent: object;
 }
 
 describe('genStyleUtils', () => {
@@ -25,7 +25,11 @@ describe('genStyleUtils', () => {
     getResetStyles: jest.fn().mockReturnValue([]),
   };
 
-  const { genStyleHooks, genSubStyleComponent, genComponentStyleHook } = genStyleUtils<TestCompTokenMap, {}, {}>(mockConfig);
+  const { genStyleHooks, genSubStyleComponent, genComponentStyleHook } = genStyleUtils<
+    TestCompTokenMap,
+    object,
+    object
+  >(mockConfig);
 
   describe('genStyleHooks', () => {
     it('should generate style hooks', () => {
@@ -37,7 +41,7 @@ describe('genStyleUtils', () => {
       expect(hooks).toBeInstanceOf(Function);
 
       const {
-        result: { current }
+        result: { current },
       } = renderHook(() => hooks('test-prefix'));
       expect(current).toBeInstanceOf(Array);
       expect(current).toHaveLength(3);
@@ -75,14 +79,13 @@ describe('genStyleUtils', () => {
 
   describe('CSSVarRegister', () => {
     it('should render CSSVarRegister component', () => {
-      const CSSVarRegister: React.FC<CSSVarRegisterProps> = ({
-        rootCls,
-        cssVar = {},
-      }) => {
+      const CSSVarRegister: React.FC<CSSVarRegisterProps> = ({ rootCls, cssVar = {} }) => {
         return <div data-testid={rootCls}>{cssVar.prefix}</div>;
       };
 
-      const { getByTestId } = render(<CSSVarRegister rootCls="test-root" cssVar={{ prefix: 'test-prefix' }} component="test" />);
+      const { getByTestId } = render(
+        <CSSVarRegister rootCls="test-root" cssVar={{ prefix: 'test-prefix' }} component="test" />,
+      );
       expect(getByTestId('test-root')).toHaveTextContent('test-prefix');
     });
   });

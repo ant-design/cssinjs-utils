@@ -7,10 +7,13 @@ export type TokenMapWithTheme<
   AliasToken extends TokenType,
   DesignToken extends TokenType,
 > = {
-    [key in keyof OverrideTokenMap<CompTokenMap, AliasToken>]?: OverrideTokenMap<CompTokenMap, AliasToken>[key] & {
-      theme?: Theme<DesignToken, AliasToken>;
-    };
+  [key in keyof OverrideTokenMap<CompTokenMap, AliasToken>]?: OverrideTokenMap<
+    CompTokenMap,
+    AliasToken
+  >[key] & {
+    theme?: Theme<DesignToken, AliasToken>;
   };
+};
 
 export interface UseTokenReturn<
   CompTokenMap extends TokenMap,
