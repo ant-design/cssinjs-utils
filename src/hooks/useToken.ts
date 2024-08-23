@@ -21,11 +21,17 @@ export interface UseTokenReturn<
   DesignToken extends TokenType,
 > {
   token: GlobalToken<CompTokenMap, AliasToken>;
-  realToken?: GlobalToken<CompTokenMap, AliasToken>;
   theme?: Theme<DesignToken, AliasToken>;
-  components?: TokenMapWithTheme<CompTokenMap, DesignToken, AliasToken>;
   hashId?: string;
+  components?: TokenMapWithTheme<CompTokenMap, DesignToken, AliasToken>;
   hashed?: string | boolean;
+  /**
+   * @warring dev only: css var token object. If you use `useToken` in production, you should use `token` instead.
+   */
+  realToken?: GlobalToken<CompTokenMap, AliasToken>;
+  /**
+   * @warring dev only: css var options object. If you use `useToken` in production, do not use it.
+   */
   cssVar?: {
     prefix?: string;
     key?: string;

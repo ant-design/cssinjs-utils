@@ -10,6 +10,7 @@ import type {
   TokenMap,
   TokenMapKey,
   UseComponentStyleResult,
+  GlobalToken,
 } from '../interface';
 
 import type AbstractCalculator from './calc/calculator';
@@ -91,12 +92,10 @@ export type CSSVarRegisterProps = {
 
 export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken) => CSSInterpolation;
 
-export type GetCompUnitless<CompTokenMap extends TokenMap, AliasToken extends TokenType> = <
-  C extends TokenMapKey<CompTokenMap>,
->(
-  component: C | [C, string],
+export type GetCompUnitless<CompTokenMap extends TokenMap, AliasToken extends TokenType> = (
+  component?: TokenMapKey<CompTokenMap> | [TokenMapKey<CompTokenMap>, string],
 ) => {
-  [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
+  [key in keyof AliasToken]?: boolean;
 };
 
 function genStyleUtils<
@@ -221,7 +220,12 @@ function genStyleUtils<
     const { unitless: compUnitless, injectStyle = true, prefixToken, ignore } = options;
 
     const CSSVarRegister: React.FC<Readonly<CSSVarRegisterProps>> = ({ rootCls, cssVar = {} }) => {
-      const { realToken } = useToken();
+      const {
+        /**
+         * @warring dev only, detail see {@link UseTokenReturn.realToken}
+         */
+        realToken = {} as GlobalToken<CompTokenMap, AliasToken>,
+      } = useToken();
       useCSSVarRegister(
         {
           path: [component],
@@ -257,7 +261,12 @@ function genStyleUtils<
     };
 
     const useCSSVar = (rootCls: string) => {
-      const { cssVar } = useToken();
+      const {
+        /**
+         * @warring dev only, detail see {@link UseTokenReturn.cssVar}
+         */
+        cssVar,
+      } = useToken();
 
       return [
         (node: React.ReactElement): React.ReactElement =>
@@ -311,7 +320,19 @@ function genStyleUtils<
 
     // Return new style hook
     return (prefixCls: string, rootCls: string = prefixCls): UseComponentStyleResult => {
-      const { theme, realToken, hashId, token, cssVar } = useToken();
+      const {
+        theme,
+        hashId,
+        token,
+        /**
+         * @warring dev only, detail see {@link UseTokenReturn.realToken}
+         */
+        realToken = {} as GlobalToken<CompTokenMap, AliasToken>,
+        /**
+         * @warring dev only, detail see {@link UseTokenReturn.cssVar}
+         */
+        cssVar,
+      } = useToken();
 
       const { rootPrefixCls, iconPrefixCls } = usePrefix();
       const csp = useCSP();
