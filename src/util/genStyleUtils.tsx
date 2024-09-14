@@ -27,6 +27,8 @@ import type { UseCSP } from '../hooks/useCSP';
 import type { UsePrefix } from '../hooks/usePrefix';
 import type { UseToken } from '../hooks/useToken';
 
+type LayerConfig = Parameters<typeof useStyleRegister>[0]['layer'];
+
 export interface StyleInfo {
   hashId: string;
   prefixCls: string;
@@ -115,6 +117,7 @@ function genStyleUtils<
     resetFont?: boolean,
   ) => CSSObject;
   getCompUnitless?: GetCompUnitless<CompTokenMap, AliasToken>;
+  layer?: LayerConfig;
 }) {
   // Dependency inversion for preparing basic config.
   const {
@@ -309,6 +312,10 @@ function genStyleUtils<
     const [component] = cells;
     const concatComponent = cells.join('-');
 
+    const mergedLayer = config.layer || {
+      name: 'antd',
+    };
+
     // Return new style hook
     return (prefixCls: string, rootCls: string = prefixCls): UseComponentStyleResult => {
       const { theme, realToken, hashId, token, cssVar } = useToken();
@@ -342,9 +349,7 @@ function genStyleUtils<
         hashId,
         nonce: () => csp.nonce!,
         clientOnly: options.clientOnly,
-        layer: {
-          name: 'antd',
-        },
+        layer: mergedLayer,
 
         // antd is always at top of styles
         order: options.order || -999,
