@@ -3,6 +3,7 @@ import { render, renderHook } from '@testing-library/react';
 
 import { genStyleUtils } from '../src';
 import type { CSSVarRegisterProps, SubStyleComponentProps } from '../src/util/genStyleUtils';
+import { createCache, StyleProvider } from '@ant-design/cssinjs';
 
 interface TestCompTokenMap {
   TestComponent: object;
@@ -23,6 +24,10 @@ describe('genStyleUtils', () => {
     }),
     useCSP: jest.fn().mockReturnValue({ nonce: 'nonce' }),
     getResetStyles: jest.fn().mockReturnValue([]),
+    layer: {
+      name: 'test',
+      dependencies: ['parent'],
+    },
   };
 
   const { genStyleHooks, genSubStyleComponent, genComponentStyleHook } = genStyleUtils<
@@ -30,6 +35,12 @@ describe('genStyleUtils', () => {
     object,
     object
   >(mockConfig);
+
+  beforeEach(() => {
+    // Clear head style
+    const head = document.head;
+    head.innerHTML = '';
+  });
 
   describe('genStyleHooks', () => {
     it('should generate style hooks', () => {
@@ -88,5 +99,21 @@ describe('genStyleUtils', () => {
       );
       expect(getByTestId('test-root')).toHaveTextContent('test-prefix');
     });
+  });
+
+  it('layer', () => {
+    const StyledComponent = genSubStyleComponent(
+      'TestComponent',
+      () => ({}),
+      () => ({}),
+    );
+
+    render(
+      <StyleProvider cache={createCache()} layer>
+        <StyledComponent prefixCls="test" />
+      </StyleProvider>,
+    );
+
+    expect(document.head.innerHTML).toContain('@layer parent,test;');
   });
 });
