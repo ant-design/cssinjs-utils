@@ -3,7 +3,7 @@ export type UseCSP = () => {
 };
 
 /**
- * Provide a default hook since not everyone need config this.
+ * Provide a default hook since not everyone needs to config this.
  */
 const useDefaultCSP: UseCSP = () => ({});
 

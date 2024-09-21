@@ -12,12 +12,12 @@ nav:
 
 ### `genStyleUtils<CompTokenMap, AliasToken, DesignToken>(config)`
 - `config`: 可选，配置
-  - `useCSP`: 使用 CSP 的钩子函数
-  - `usePrefix`: 使用样式前缀的钩子函数
-  - `useToken`: 使用 token 的钩子函数
-  - `getResetStyles`: 获取重置样式函数
-  - `getCommonStyle`: 获取通用样式函数
-  - `getCompUnitless`: 获取组件无单位样式函数
+  - `useCSP`: 使用 CSP 的钩子函数, 用于在不需要额外配置的情况下自动处理 CSP 规则
+  - `usePrefix`: 使用样式前缀的钩子函数, 用于在所有组件中统一管理和应用样式前缀
+  - `useToken`: 使用 token 的钩子函数, 帮助在样式生成时动态应用 token
+  - `getResetStyles`: 获取重置样式函数, 用于全局样式重置
+  - `getCommonStyle`: 获取通用样式函数, 适用于常见组件的默认样式
+  - `getCompUnitless`: 获取组件无单位样式函数, 生成无需单位的数值型样式
 - `CompTokenMap`: 范型参数，表示组件 token 映射
 - `AliasToken`: 范型参数，表示别名 token
 - `DesignToken`: 范型参数，表示设计 token
