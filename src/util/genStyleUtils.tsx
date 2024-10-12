@@ -97,9 +97,7 @@ export type GetCompUnitless<CompTokenMap extends TokenMap, AliasToken extends To
   C extends TokenMapKey<CompTokenMap>,
 >(
   component: C | [C, string],
-) => {
-  [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
-};
+) => Partial<Record<ComponentTokenKey<CompTokenMap, AliasToken, C>, boolean>>;
 
 function genStyleUtils<
   CompTokenMap extends TokenMap,
@@ -143,9 +141,7 @@ function genStyleUtils<
       /**
        * Component tokens that do not need unit.
        */
-      unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
-      };
+      unitless?: Partial<Record<ComponentTokenKey<CompTokenMap, AliasToken, C>, boolean>>;
       /**
        * Only use component style in client side. Ignore in SSR.
        */
@@ -207,12 +203,8 @@ function genStyleUtils<
     component: C,
     getDefaultToken: GetDefaultToken<CompTokenMap, AliasToken, C> | undefined,
     options: {
-      unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
-      };
-      ignore?: {
-        [key in keyof AliasToken]?: boolean;
-      };
+      unitless?: Partial<Record<ComponentTokenKey<CompTokenMap, AliasToken, C>, boolean>>;
+      ignore?: Partial<Record<keyof AliasToken, boolean>>
       deprecatedTokens?: [
         ComponentTokenKey<CompTokenMap, AliasToken, C>,
         ComponentTokenKey<CompTokenMap, AliasToken, C>,
@@ -300,9 +292,7 @@ function genStyleUtils<
        */
       order?: number;
       injectStyle?: boolean;
-      unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
-      };
+      unitless?: Partial<Record<ComponentTokenKey<CompTokenMap, AliasToken, C>, boolean>>;
     } = {},
   ) {
     const cells = (
@@ -448,9 +438,7 @@ function genStyleUtils<
        */
       order?: number;
       injectStyle?: boolean;
-      unitless?: {
-        [key in ComponentTokenKey<CompTokenMap, AliasToken, C>]: boolean;
-      };
+      unitless?: Partial<Record<ComponentTokenKey<CompTokenMap, AliasToken, C>, boolean>>;
     } = {},
   ) {
     const useStyle = genComponentStyleHook(componentName, styleFn, getDefaultToken, {
