@@ -88,6 +88,27 @@ describe('genStyleUtils', () => {
     });
   });
 
+  describe('genComponentStyleHook should run without getResetStyles', () => {
+    it('should generate component style hook', () => {
+      const component = 'TestComponent';
+      const styleFn = jest.fn();
+      const getDefaultToken = jest.fn();
+      const { getResetStyles, ...restMockConfig } = mockConfig;
+      const { genComponentStyleHook: genComponentStyleHookWithoutReset } = genStyleUtils<
+        TestCompTokenMap,
+        object,
+        object
+      >(restMockConfig);
+      const hook = genComponentStyleHookWithoutReset(component, styleFn, getDefaultToken);
+      const TestComponent: React.FC<SubStyleComponentProps> = ({ prefixCls, rootCls }) => {
+        hook(prefixCls, rootCls);
+        return <div data-testid="test-component">Test</div>;
+      };
+      const { container } = render(<TestComponent prefixCls="test-prefix" rootCls="test-root" />);
+      expect(() => container).not.toThrow();
+    });
+  });
+
   describe('CSSVarRegister', () => {
     it('should render CSSVarRegister component', () => {
       const CSSVarRegister: React.FC<CSSVarRegisterProps> = ({ rootCls, cssVar = {} }) => {
