@@ -350,8 +350,9 @@ function genStyleUtils<
         order: options.order || -999,
       };
 
-      // Generate style for all need reset tags.
+      // This if statement is safe, as it will only be used if the generator has the function. It's not dynamic.
       if (typeof getResetStyles === 'function') {
+        // Generate style for all need reset tags.
         useStyleRegister(
           { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
           () => getResetStyles(token, { prefix: { rootPrefixCls, iconPrefixCls }, csp }),
