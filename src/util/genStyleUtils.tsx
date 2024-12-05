@@ -91,7 +91,12 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken) => CSSInterpolation;
+type GetResetStylesConfig = {
+  prefix: ReturnType<UsePrefix>;
+  csp: ReturnType<UseCSP>
+};
+
+export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken, config?: GetResetStylesConfig) => CSSInterpolation;
 
 export type GetCompUnitless<CompTokenMap extends TokenMap, AliasToken extends TokenType> = <
   C extends TokenMapKey<CompTokenMap>,
@@ -345,11 +350,14 @@ function genStyleUtils<
         order: options.order || -999,
       };
 
-      // Generate style for all need reset tags.
-      useStyleRegister(
-        { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => (typeof getResetStyles === 'function' ? getResetStyles(token) : []),
-      );
+      // This if statement is safe, as it will only be used if the generator has the function. It's not dynamic.
+      if (typeof getResetStyles === 'function') {
+        // Generate style for all need reset tags.
+        useStyleRegister(
+          { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
+          () => getResetStyles(token, { prefix: { rootPrefixCls, iconPrefixCls }, csp }),
+        );
+      }
 
       const wrapSSR = useStyleRegister(
         { ...sharedConfig, path: [concatComponent, prefixCls, iconPrefixCls] },
