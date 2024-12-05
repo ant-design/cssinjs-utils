@@ -351,17 +351,12 @@ function genStyleUtils<
       };
 
       // Generate style for all need reset tags.
-      useStyleRegister(
-        { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => (
-          typeof getResetStyles === 'function'
-            ? getResetStyles(token, {
-                prefix: { rootPrefixCls, iconPrefixCls },
-                csp,
-              })
-            : []
-        ),
-      );
+      if (typeof getResetStyles === 'function') {
+        useStyleRegister(
+          { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
+          () => getResetStyles(token, { prefix: { rootPrefixCls, iconPrefixCls }, csp }),
+        );
+      }
 
       const wrapSSR = useStyleRegister(
         { ...sharedConfig, path: [concatComponent, prefixCls, iconPrefixCls] },
