@@ -91,7 +91,12 @@ export type CSSVarRegisterProps = {
   };
 };
 
-export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken) => CSSInterpolation;
+type GetResetStylesConfig = {
+  prefix: ReturnType<UsePrefix>;
+  csp: ReturnType<UseCSP>
+};
+
+export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken, config?: GetResetStylesConfig) => CSSInterpolation;
 
 export type GetCompUnitless<CompTokenMap extends TokenMap, AliasToken extends TokenType> = <
   C extends TokenMapKey<CompTokenMap>,
@@ -348,7 +353,14 @@ function genStyleUtils<
       // Generate style for all need reset tags.
       useStyleRegister(
         { ...sharedConfig, clientOnly: false, path: ['Shared', rootPrefixCls] },
-        () => (typeof getResetStyles === 'function' ? getResetStyles(token) : []),
+        () => (
+          typeof getResetStyles === 'function'
+            ? getResetStyles(token, {
+                prefix: { rootPrefixCls, iconPrefixCls },
+                csp,
+              })
+            : []
+        ),
       );
 
       const wrapSSR = useStyleRegister(
