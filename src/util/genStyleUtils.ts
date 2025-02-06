@@ -219,7 +219,7 @@ function genStyleUtils<
   ) {
     const { unitless: compUnitless, prefixToken, ignore } = options;
 
-    const useCSSVar = (rootCls: string) => {
+    return (rootCls: string) => {
       const { cssVar } = useToken();
 
       const { realToken } = useToken();
@@ -259,8 +259,6 @@ function genStyleUtils<
 
       return cssVar?.key;
     };
-
-    return useCSSVar;
   }
 
   function genComponentStyleHook<C extends TokenMapKey<CompTokenMap>>(
