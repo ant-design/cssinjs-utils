@@ -46,7 +46,9 @@ describe('genStyleUtils', () => {
     it('should generate style hooks', () => {
       const component = 'TestComponent';
       const styleFn = jest.fn();
-      const getDefaultToken = jest.fn();
+      const getDefaultToken = {
+        mockCompToken: 'mock'
+      };
       const hooks = genStyleHooks(component, styleFn, getDefaultToken);
 
       expect(hooks).toBeInstanceOf(Function);
