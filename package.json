@@ -29,7 +29,7 @@
   "scripts": {
     "start": "dumi dev",
     "compile": "father build",
-    "prepublishOnly": "npm run compile && np --yolo --no-publish",
+    "prepublishOnly": "npm run compile && np --yolo --any-branch --no-publish",
     "lint": "eslint src/ --ext .tsx,.ts,.jsx,.js",
     "test": "rc-test",
     "coverage": "rc-test --coverage"
