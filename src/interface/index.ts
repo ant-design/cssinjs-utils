@@ -7,5 +7,3 @@ export type {
   ComponentTokenKey,
   GlobalToken,
 } from './components';
-
-export type UseComponentStyleResult = [(node: React.ReactNode) => React.ReactElement, string];
