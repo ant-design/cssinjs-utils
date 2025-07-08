@@ -1,4 +1,4 @@
-import type React from 'react';
+import React, { useMemo } from 'react';
 
 import type { CSSInterpolation, CSSObject, TokenType } from '@ant-design/cssinjs';
 
@@ -220,9 +220,8 @@ function genStyleUtils<
     const { unitless: compUnitless, prefixToken, ignore } = options;
 
     return (rootCls: string) => {
-      const { cssVar } = useToken();
+      const { cssVar, realToken } = useToken();
 
-      const { realToken } = useToken();
       useCSSVarRegister(
         {
           path: [component],
@@ -298,7 +297,13 @@ function genStyleUtils<
 
     // Return new style hook
     return (prefixCls: string, rootCls: string = prefixCls): string => {
-      const { theme, realToken, hashId, token, cssVar } = useToken();
+      const { theme, realToken, hashId, token, cssVar, disabledRuntimeStyle } = useToken();
+
+      // Update of `disabledRuntimeStyle` would cause React hook error, so memoized it and never update.
+      const memoizedDisabledRuntimeStyle = useMemo(() => disabledRuntimeStyle, []);
+      if (memoizedDisabledRuntimeStyle) {
+        return hashId;
+      }
 
       const { rootPrefixCls, iconPrefixCls } = usePrefix();
       const csp = useCSP();
