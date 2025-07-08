@@ -155,7 +155,7 @@ describe('genStyleUtils', () => {
           hashId: 'hash',
           token: {},
           cssVar: {},
-          disabledRuntimeStyle: true,
+          zeroRuntime: true,
         }),
         usePrefix,
       }

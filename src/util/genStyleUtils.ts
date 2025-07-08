@@ -297,11 +297,11 @@ function genStyleUtils<
 
     // Return new style hook
     return (prefixCls: string, rootCls: string = prefixCls): string => {
-      const { theme, realToken, hashId, token, cssVar, disabledRuntimeStyle } = useToken();
+      const { theme, realToken, hashId, token, cssVar, zeroRuntime } = useToken();
 
       // Update of `disabledRuntimeStyle` would cause React hook error, so memoized it and never update.
-      const memoizedDisabledRuntimeStyle = useMemo(() => disabledRuntimeStyle, []);
-      if (memoizedDisabledRuntimeStyle) {
+      const memoizedZeroRuntime = useMemo(() => zeroRuntime, []);
+      if (memoizedZeroRuntime) {
         return hashId;
       }
 
