@@ -139,4 +139,44 @@ describe('genStyleUtils', () => {
 
     expect(document.head.innerHTML).toContain('@layer parent,test;');
   });
+
+  describe('disabledRuntimeStyle', () => {
+    it('should work', () => {
+      const usePrefix = jest.fn().mockReturnValue({
+        rootPrefixCls: 'ant',
+        iconPrefixCls: 'anticon',
+      });
+
+      const config = {
+        ...mockConfig,
+        useToken: jest.fn().mockReturnValue({
+          theme: {},
+          realToken: {},
+          hashId: 'hash',
+          token: {},
+          cssVar: {},
+          zeroRuntime: true,
+        }),
+        usePrefix,
+      }
+      const { genComponentStyleHook: gen } = genStyleUtils<
+        TestCompTokenMap,
+        object,
+        object
+      >(config);
+
+      const styleFn = jest.fn();
+      const getDefaultToken = jest.fn();
+      const useStyle = gen('TestComponent', styleFn, getDefaultToken)
+
+      const TestComponent: React.FC<SubStyleComponentProps> = ({ prefixCls, rootCls }) => {
+        useStyle(prefixCls, rootCls);
+        return <div data-testid="test-component">Test</div>;
+      };
+
+      const { getByTestId } = render(<TestComponent prefixCls="test-prefix" rootCls="test-root" />);
+      expect(getByTestId('test-component')).toHaveTextContent('Test');
+      expect(usePrefix).not.toHaveBeenCalled();
+    })
+  })
 });
