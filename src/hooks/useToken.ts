@@ -30,6 +30,7 @@ export interface UseTokenReturn<
     prefix?: string;
     key?: string;
   };
+  zeroRuntime?: boolean;
 }
 
 export type UseToken<

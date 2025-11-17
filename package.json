@@ -1,6 +1,6 @@
 {
   "name": "@ant-design/cssinjs-utils",
-  "version": "1.1.3",
+  "version": "2.0.0-alpha.2",
   "description": "A cssinjs util library to support Ant Design (antd) and its ecosystem libraries.",
   "keywords": [
     "react",
@@ -29,7 +29,7 @@
   "scripts": {
     "start": "dumi dev",
     "compile": "father build",
-    "prepublishOnly": "npm run compile && np --yolo --no-publish",
+    "prepublishOnly": "npm run compile && np --yolo --any-branch --no-publish",
     "lint": "eslint src/ --ext .tsx,.ts,.jsx,.js",
     "test": "rc-test",
     "coverage": "rc-test --coverage"
@@ -57,7 +57,7 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@ant-design/cssinjs": "^1.21.0",
+    "@ant-design/cssinjs": "^2.0.0-alpha.2",
     "@babel/runtime": "^7.23.2",
     "rc-util": "^5.38.0"
   },

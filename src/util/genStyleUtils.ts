@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import type { CSSInterpolation, CSSObject, TokenType } from '@ant-design/cssinjs';
 
@@ -9,7 +9,6 @@ import type {
   GlobalTokenWithComponent,
   TokenMap,
   TokenMapKey,
-  UseComponentStyleResult,
 } from '../interface';
 
 import type AbstractCalculator from './calc/calculator';
@@ -197,10 +196,10 @@ function genStyleUtils<
     const useCSSVar = genCSSVarRegister(componentName, getDefaultToken, mergedOptions);
 
     return (prefixCls: string, rootCls: string = prefixCls) => {
-      const [, hashId] = useStyle(prefixCls, rootCls);
-      const [wrapCSSVar, cssVarCls] = useCSSVar(rootCls);
+      const hashId = useStyle(prefixCls, rootCls);
+      const cssVarCls = useCSSVar(rootCls);
 
-      return [wrapCSSVar, hashId, cssVarCls] as const;
+      return [hashId, cssVarCls] as const;
     };
   }
 
@@ -218,10 +217,11 @@ function genStyleUtils<
       prefixToken: (key: string) => string;
     },
   ) {
-    const { unitless: compUnitless, injectStyle = true, prefixToken, ignore } = options;
+    const { unitless: compUnitless, prefixToken, ignore } = options;
 
-    const CSSVarRegister: React.FC<Readonly<CSSVarRegisterProps>> = ({ rootCls, cssVar = {} }) => {
-      const { realToken } = useToken();
+    return (rootCls: string) => {
+      const { cssVar, realToken } = useToken();
+
       useCSSVarRegister(
         {
           path: [component],
@@ -246,34 +246,18 @@ function genStyleUtils<
               deprecatedTokens: options?.deprecatedTokens,
             },
           );
-          Object.keys(defaultToken).forEach((key) => {
-            componentToken[prefixToken(key)] = componentToken[key];
-            delete componentToken[key];
-          });
+          if (defaultToken) {
+            Object.keys(defaultToken).forEach((key) => {
+              componentToken[prefixToken(key)] = componentToken[key];
+              delete componentToken[key];
+            });
+          }
           return componentToken;
         },
       );
-      return null;
+
+      return cssVar?.key;
     };
-
-    const useCSSVar = (rootCls: string) => {
-      const { cssVar } = useToken();
-
-      return [
-        (node: React.ReactElement): React.ReactElement =>
-          injectStyle && cssVar ? (
-            <>
-              <CSSVarRegister rootCls={rootCls} cssVar={cssVar} component={component} />
-              {node}
-            </>
-          ) : (
-            node
-          ),
-        cssVar?.key,
-      ] as const;
-    };
-
-    return useCSSVar;
   }
 
   function genComponentStyleHook<C extends TokenMapKey<CompTokenMap>>(
@@ -312,25 +296,29 @@ function genStyleUtils<
     };
 
     // Return new style hook
-    return (prefixCls: string, rootCls: string = prefixCls): UseComponentStyleResult => {
-      const { theme, realToken, hashId, token, cssVar } = useToken();
+    return (prefixCls: string, rootCls: string = prefixCls): string => {
+      const { theme, realToken, hashId, token, cssVar, zeroRuntime } = useToken();
+
+      // Update of `disabledRuntimeStyle` would cause React hook error, so memoized it and never update.
+      const memoizedZeroRuntime = useMemo(() => zeroRuntime, []);
+      if (memoizedZeroRuntime) {
+        return hashId;
+      }
 
       const { rootPrefixCls, iconPrefixCls } = usePrefix();
       const csp = useCSP();
 
-      const type = cssVar ? 'css' : 'js';
+      const type = 'css';
 
       // Use unique memo to share the result across all instances
       const calc = useUniqueMemo(() => {
         const unitlessCssVar = new Set<string>();
-        if (cssVar) {
-          Object.keys(options.unitless || {}).forEach((key) => {
-            // Some component proxy the AliasToken (e.g. Image) and some not (e.g. Modal)
-            // We should both pass in `unitlessCssVar` to make sure the CSSVar can be unitless.
-            unitlessCssVar.add(token2CSSVar(key, cssVar.prefix));
-            unitlessCssVar.add(token2CSSVar(key, getCompVarPrefix(component, cssVar.prefix)));
-          });
-        }
+        Object.keys(options.unitless || {}).forEach((key) => {
+          // Some component proxy the AliasToken (e.g. Image) and some not (e.g. Modal)
+          // We should both pass in `unitlessCssVar` to make sure the CSSVar can be unitless.
+          unitlessCssVar.add(token2CSSVar(key, cssVar.prefix));
+          unitlessCssVar.add(token2CSSVar(key, getCompVarPrefix(component, cssVar.prefix)));
+        });
 
         return genCalc(type, unitlessCssVar);
       }, [type, component, cssVar?.prefix]);
@@ -359,7 +347,7 @@ function genStyleUtils<
         );
       }
 
-      const wrapSSR = useStyleRegister(
+      useStyleRegister(
         { ...sharedConfig, path: [concatComponent, prefixCls, iconPrefixCls] },
         () => {
           if (options.injectStyle === false) {
@@ -382,7 +370,7 @@ function genStyleUtils<
             { deprecatedTokens: options.deprecatedTokens },
           );
 
-          if (cssVar && defaultComponentToken && typeof defaultComponentToken === 'object') {
+          if (defaultComponentToken && typeof defaultComponentToken === 'object') {
             Object.keys(defaultComponentToken).forEach((key) => {
               defaultComponentToken[key] = `var(${token2CSSVar(
                 key,
@@ -398,12 +386,10 @@ function genStyleUtils<
               iconCls: `.${iconPrefixCls}`,
               antCls: `.${rootPrefixCls}`,
               calc,
-              // @ts-ignore
               max,
-              // @ts-ignore
               min,
             },
-            cssVar ? defaultComponentToken : componentToken,
+            defaultComponentToken,
           );
 
           const styleInterpolation = styleFn(mergedToken, {
@@ -421,7 +407,7 @@ function genStyleUtils<
         },
       );
 
-      return [wrapSSR, hashId];
+      return hashId;
     };
   }
 

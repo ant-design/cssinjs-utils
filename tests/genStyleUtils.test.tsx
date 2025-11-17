@@ -2,7 +2,7 @@ import React from 'react';
 import { render, renderHook } from '@testing-library/react';
 
 import { genStyleUtils } from '../src';
-import type { CSSVarRegisterProps, SubStyleComponentProps } from '../src/util/genStyleUtils';
+import type { CSSVarRegisterProps, SubStyleComponentProps } from '@/util/genStyleUtils';
 import { createCache, StyleProvider } from '@ant-design/cssinjs';
 
 interface TestCompTokenMap {
@@ -46,7 +46,9 @@ describe('genStyleUtils', () => {
     it('should generate style hooks', () => {
       const component = 'TestComponent';
       const styleFn = jest.fn();
-      const getDefaultToken = jest.fn();
+      const getDefaultToken = {
+        mockCompToken: 'mock'
+      };
       const hooks = genStyleHooks(component, styleFn, getDefaultToken);
 
       expect(hooks).toBeInstanceOf(Function);
@@ -55,7 +57,7 @@ describe('genStyleUtils', () => {
         result: { current },
       } = renderHook(() => hooks('test-prefix'));
       expect(current).toBeInstanceOf(Array);
-      expect(current).toHaveLength(3);
+      expect(current).toHaveLength(2);
     });
   });
 
@@ -137,4 +139,44 @@ describe('genStyleUtils', () => {
 
     expect(document.head.innerHTML).toContain('@layer parent,test;');
   });
+
+  describe('disabledRuntimeStyle', () => {
+    it('should work', () => {
+      const usePrefix = jest.fn().mockReturnValue({
+        rootPrefixCls: 'ant',
+        iconPrefixCls: 'anticon',
+      });
+
+      const config = {
+        ...mockConfig,
+        useToken: jest.fn().mockReturnValue({
+          theme: {},
+          realToken: {},
+          hashId: 'hash',
+          token: {},
+          cssVar: {},
+          zeroRuntime: true,
+        }),
+        usePrefix,
+      }
+      const { genComponentStyleHook: gen } = genStyleUtils<
+        TestCompTokenMap,
+        object,
+        object
+      >(config);
+
+      const styleFn = jest.fn();
+      const getDefaultToken = jest.fn();
+      const useStyle = gen('TestComponent', styleFn, getDefaultToken)
+
+      const TestComponent: React.FC<SubStyleComponentProps> = ({ prefixCls, rootCls }) => {
+        useStyle(prefixCls, rootCls);
+        return <div data-testid="test-component">Test</div>;
+      };
+
+      const { getByTestId } = render(<TestComponent prefixCls="test-prefix" rootCls="test-root" />);
+      expect(getByTestId('test-component')).toHaveTextContent('Test');
+      expect(usePrefix).not.toHaveBeenCalled();
+    })
+  })
 });
