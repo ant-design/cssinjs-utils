@@ -1,4 +1,4 @@
-import { warning } from 'rc-util';
+import { warning } from '@rc-component/util';
 import type {
   TokenMap,
   TokenMapKey,
