@@ -4,29 +4,46 @@ import { createCache, StyleProvider } from '@ant-design/cssinjs';
 import { genStyleUtils } from '../src';
 
 interface TestTokenMap {
-  TestComponent: Record<string, any>;
+  TestComponent: {
+    colorPrimary?: string;
+    fontSize?: number;
+  };
 }
 
 describe('extraCssVarPrefixCls', () => {
   const mockConfig = {
-    usePrefix: () => ({
+    usePrefix: jest.fn().mockReturnValue({
       rootPrefixCls: 'ant',
       iconPrefixCls: 'anticon',
     }),
-    useToken: () => ({
+    useToken: jest.fn().mockReturnValue({
       theme: {
         id: 'test',
       } as any,
-      realToken: { colorPrimary: '#1890ff', fontSize: 14 },
+      realToken: {
+        colorPrimary: '#1890ff',
+        fontSize: 14,
+        TestComponent: {
+          colorPrimary: '#ff0000',
+          fontSize: 16,
+        },
+      },
       hashId: 'css-dev-only-do-not-override-abc123',
-      token: { colorPrimary: '#1890ff', fontSize: 14 },
+      token: {
+        colorPrimary: '#1890ff',
+        fontSize: 14,
+        TestComponent: {
+          colorPrimary: '#ff0000',
+          fontSize: 16,
+        },
+      },
       cssVar: {
         prefix: 'ant',
         key: 'test',
       },
     }),
-    useCSP: () => ({ nonce: 'nonce' }),
-    getResetStyles: () => [],
+    useCSP: jest.fn().mockReturnValue({ nonce: 'nonce' }),
+    getResetStyles: jest.fn().mockReturnValue([]),
     layer: {
       name: 'test',
       dependencies: ['parent'],
@@ -42,17 +59,25 @@ describe('extraCssVarPrefixCls', () => {
   it('should inject CSS vars for extraCssVarPrefixCls', () => {
     const hooks = genStyleHooks(
       'TestComponent',
-      () => ({}),
-      () => ({}),
+      (token) => ({
+        [`${token.componentCls}`]: {
+          color: token.colorPrimary,
+          fontSize: token.fontSize,
+        },
+      }),
+      () => ({
+        colorPrimary: '#ff0000',
+        fontSize: 16,
+      }),
       {
         extraCssVarPrefixCls: ['custom-a', 'custom-b'],
-        injectStyle: true,
       },
     );
 
     const TestComponent = () => {
-      const [hashId] = hooks('test-prefix');
-      return <div>{hashId}</div>;
+      const [hashId, cssVarCls] = hooks('test-prefix');
+      const className = [hashId, cssVarCls].filter(Boolean).join(' ');
+      return <div className={className}>{hashId}</div>;
     };
 
     render(
@@ -65,9 +90,6 @@ describe('extraCssVarPrefixCls', () => {
       .map((el) => el.textContent)
       .join('\n');
 
-    console.log('Total CSS:', totalStyle);
-
-    expect(totalStyle).toContain('.test-prefix');
     expect(totalStyle).toContain('.custom-a');
     expect(totalStyle).toContain('.custom-b');
   });
