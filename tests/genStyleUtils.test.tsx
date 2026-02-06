@@ -3,7 +3,12 @@ import { render, renderHook } from '@testing-library/react';
 
 import { genStyleUtils } from '../src';
 import type { CSSVarRegisterProps, SubStyleComponentProps } from '@/util/genStyleUtils';
-import { createCache, StyleProvider } from '@ant-design/cssinjs';
+import { createCache, StyleProvider, useCSSVarRegister } from '@ant-design/cssinjs';
+
+jest.mock('@ant-design/cssinjs', () => ({
+  ...jest.requireActual('@ant-design/cssinjs'),
+  useCSSVarRegister: jest.fn(),
+}));
 
 interface TestCompTokenMap {
   TestComponent: object;
@@ -40,6 +45,7 @@ describe('genStyleUtils', () => {
     // Clear head style
     const head = document.head;
     head.innerHTML = '';
+    jest.clearAllMocks();
   });
 
   describe('genStyleHooks', () => {
@@ -47,7 +53,7 @@ describe('genStyleUtils', () => {
       const component = 'TestComponent';
       const styleFn = jest.fn();
       const getDefaultToken = {
-        mockCompToken: 'mock'
+        mockCompToken: 'mock',
       };
       const hooks = genStyleHooks(component, styleFn, getDefaultToken);
 
@@ -58,6 +64,35 @@ describe('genStyleUtils', () => {
       } = renderHook(() => hooks('test-prefix'));
       expect(current).toBeInstanceOf(Array);
       expect(current).toHaveLength(2);
+    });
+
+    it('should inject CSS vars for extraCssVarPrefixCls', () => {
+      const component = 'TestComponent';
+      const styleFn = jest.fn();
+      const getDefaultToken = jest.fn();
+      const hooks = genStyleHooks(component, styleFn, getDefaultToken, {
+        extraCssVarPrefixCls: ['custom-a', 'custom-b'],
+      });
+
+      renderHook(() => hooks('test-prefix'));
+
+      // useCSSVarRegister should be called 3 times: test-prefix, custom-a, custom-b
+      expect(useCSSVarRegister).toHaveBeenCalledTimes(3);
+      expect(useCSSVarRegister).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ scope: 'test-prefix' }),
+        expect.any(Function),
+      );
+      expect(useCSSVarRegister).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ scope: 'custom-a' }),
+        expect.any(Function),
+      );
+      expect(useCSSVarRegister).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({ scope: 'custom-b' }),
+        expect.any(Function),
+      );
     });
   });
 
@@ -158,16 +193,14 @@ describe('genStyleUtils', () => {
           zeroRuntime: true,
         }),
         usePrefix,
-      }
-      const { genComponentStyleHook: gen } = genStyleUtils<
-        TestCompTokenMap,
-        object,
-        object
-      >(config);
+      };
+      const { genComponentStyleHook: gen } = genStyleUtils<TestCompTokenMap, object, object>(
+        config,
+      );
 
       const styleFn = jest.fn();
       const getDefaultToken = jest.fn();
-      const useStyle = gen('TestComponent', styleFn, getDefaultToken)
+      const useStyle = gen('TestComponent', styleFn, getDefaultToken);
 
       const TestComponent: React.FC<SubStyleComponentProps> = ({ prefixCls, rootCls }) => {
         useStyle(prefixCls, rootCls);
@@ -177,6 +210,6 @@ describe('genStyleUtils', () => {
       const { getByTestId } = render(<TestComponent prefixCls="test-prefix" rootCls="test-root" />);
       expect(getByTestId('test-component')).toHaveTextContent('Test');
       expect(usePrefix).not.toHaveBeenCalled();
-    })
-  })
+    });
+  });
 });

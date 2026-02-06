@@ -92,10 +92,13 @@ export type CSSVarRegisterProps = {
 
 type GetResetStylesConfig = {
   prefix: ReturnType<UsePrefix>;
-  csp: ReturnType<UseCSP>
+  csp: ReturnType<UseCSP>;
 };
 
-export type GetResetStyles<AliasToken extends TokenType> = (token: AliasToken, config?: GetResetStylesConfig) => CSSInterpolation;
+export type GetResetStyles<AliasToken extends TokenType> = (
+  token: AliasToken,
+  config?: GetResetStylesConfig,
+) => CSSInterpolation;
 
 export type GetCompUnitless<CompTokenMap extends TokenMap, AliasToken extends TokenType> = <
   C extends TokenMapKey<CompTokenMap>,
@@ -160,6 +163,18 @@ function genStyleUtils<
        * @default true
        */
       injectStyle?: boolean;
+      /**
+       * Extra prefixCls to inject CSS variables.
+       * 为额外的 prefixCls 注入 CSS 变量（不注入样式）。
+       *
+       * @example
+       * ```typescript
+       * {
+       *   extraCssVarPrefixCls: ['my-comp-compact', 'my-comp-large']
+       * }
+       * ```
+       */
+      extraCssVarPrefixCls?: string[];
     },
   ) {
     const componentName = Array.isArray(component) ? component[0] : component;
@@ -199,6 +214,10 @@ function genStyleUtils<
       const hashId = useStyle(prefixCls, rootCls);
       const cssVarCls = useCSSVar(rootCls);
 
+      options?.extraCssVarPrefixCls?.forEach((customPrefixCls) => {
+        useCSSVar(customPrefixCls);
+      });
+
       return [hashId, cssVarCls] as const;
     };
   }
@@ -208,7 +227,7 @@ function genStyleUtils<
     getDefaultToken: GetDefaultToken<CompTokenMap, AliasToken, C> | undefined,
     options: {
       unitless?: Partial<Record<ComponentTokenKey<CompTokenMap, AliasToken, C>, boolean>>;
-      ignore?: Partial<Record<keyof AliasToken, boolean>>
+      ignore?: Partial<Record<keyof AliasToken, boolean>>;
       deprecatedTokens?: [
         ComponentTokenKey<CompTokenMap, AliasToken, C>,
         ComponentTokenKey<CompTokenMap, AliasToken, C>,
