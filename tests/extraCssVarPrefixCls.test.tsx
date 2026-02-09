@@ -93,4 +93,45 @@ describe('extraCssVarPrefixCls', () => {
     expect(totalStyle).toContain('.custom-a');
     expect(totalStyle).toContain('.custom-b');
   });
+
+  it('should support function type for extraCssVarPrefixCls', () => {
+    const hooks = genStyleHooks(
+      'TestComponent',
+      (token) => ({
+        [`${token.componentCls}`]: {
+          color: token.colorPrimary,
+          fontSize: token.fontSize,
+        },
+      }),
+      () => ({
+        colorPrimary: '#ff0000',
+        fontSize: 16,
+      }),
+      {
+        extraCssVarPrefixCls: ({ prefixCls, rootCls }) => [
+          `${prefixCls}-container`,
+          `${rootCls}-wrapper`,
+        ],
+      },
+    );
+
+    const TestComponent = () => {
+      const [hashId, cssVarCls] = hooks('custom-list', 'custom');
+      const className = [hashId, cssVarCls].filter(Boolean).join(' ');
+      return <div className={className}>{hashId}</div>;
+    };
+
+    render(
+      <StyleProvider cache={createCache()}>
+        <TestComponent />
+      </StyleProvider>,
+    );
+
+    const totalStyle = Array.from(document.querySelectorAll('style'))
+      .map((el) => el.textContent)
+      .join('\n');
+
+    expect(totalStyle).toContain('.custom-list-container');
+    expect(totalStyle).toContain('.custom-wrapper');
+  });
 });
