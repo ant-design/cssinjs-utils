@@ -165,16 +165,21 @@ function genStyleUtils<
       injectStyle?: boolean;
       /**
        * Extra prefixCls to inject CSS variables.
-       * 为额外的 prefixCls 注入 CSS 变量（不注入样式）。
        *
        * @example
        * ```typescript
        * {
        *   extraCssVarPrefixCls: ['my-comp-compact', 'my-comp-large']
        * }
+       * // or
+       * {
+       *   extraCssVarPrefixCls: ({ prefixCls, rootCls }) => [`${prefixCls}-container`]
+       * }
        * ```
        */
-      extraCssVarPrefixCls?: string[];
+      extraCssVarPrefixCls?:
+        | string[]
+        | ((info: { prefixCls: string; rootCls: string }) => string[]);
     },
   ) {
     const componentName = Array.isArray(component) ? component[0] : component;
@@ -212,8 +217,16 @@ function genStyleUtils<
 
     return (prefixCls: string, rootCls: string = prefixCls) => {
       const hashId = useStyle(prefixCls, rootCls);
+
+      // Resolve function type to get dynamic extra prefix
+      const extraPrefixCls = options?.extraCssVarPrefixCls;
+      const resolvedExtraPrefixCls =
+        typeof extraPrefixCls === 'function'
+          ? extraPrefixCls({ prefixCls, rootCls })
+          : extraPrefixCls;
+
       const cssVarCls = useCSSVar(
-        options?.extraCssVarPrefixCls?.length ? [rootCls, ...options.extraCssVarPrefixCls] : rootCls,
+        resolvedExtraPrefixCls?.length ? [rootCls, ...resolvedExtraPrefixCls] : rootCls,
       );
 
       return [hashId, cssVarCls] as const;
