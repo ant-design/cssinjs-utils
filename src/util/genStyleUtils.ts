@@ -213,7 +213,7 @@ function genStyleUtils<
     return (prefixCls: string, rootCls: string = prefixCls) => {
       const hashId = useStyle(prefixCls, rootCls);
       const cssVarCls = useCSSVar(
-        options?.extraCssVarPrefixCls ? [rootCls, ...options.extraCssVarPrefixCls] : rootCls,
+        options?.extraCssVarPrefixCls?.length ? [rootCls, ...options.extraCssVarPrefixCls] : rootCls,
       );
 
       return [hashId, cssVarCls] as const;
