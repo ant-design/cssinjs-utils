@@ -47,7 +47,7 @@ describe('genStyleUtils', () => {
       const component = 'TestComponent';
       const styleFn = jest.fn();
       const getDefaultToken = {
-        mockCompToken: 'mock'
+        mockCompToken: 'mock',
       };
       const hooks = genStyleHooks(component, styleFn, getDefaultToken);
 
@@ -158,16 +158,14 @@ describe('genStyleUtils', () => {
           zeroRuntime: true,
         }),
         usePrefix,
-      }
-      const { genComponentStyleHook: gen } = genStyleUtils<
-        TestCompTokenMap,
-        object,
-        object
-      >(config);
+      };
+      const { genComponentStyleHook: gen } = genStyleUtils<TestCompTokenMap, object, object>(
+        config,
+      );
 
       const styleFn = jest.fn();
       const getDefaultToken = jest.fn();
-      const useStyle = gen('TestComponent', styleFn, getDefaultToken)
+      const useStyle = gen('TestComponent', styleFn, getDefaultToken);
 
       const TestComponent: React.FC<SubStyleComponentProps> = ({ prefixCls, rootCls }) => {
         useStyle(prefixCls, rootCls);
@@ -177,6 +175,6 @@ describe('genStyleUtils', () => {
       const { getByTestId } = render(<TestComponent prefixCls="test-prefix" rootCls="test-root" />);
       expect(getByTestId('test-component')).toHaveTextContent('Test');
       expect(usePrefix).not.toHaveBeenCalled();
-    })
-  })
+    });
+  });
 });

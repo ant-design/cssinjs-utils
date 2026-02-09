@@ -57,7 +57,7 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@ant-design/cssinjs": "^2.0.1",
+    "@ant-design/cssinjs": "^2.1.0",
     "@babel/runtime": "^7.23.2",
     "@rc-component/util": "^1.4.0"
   },
