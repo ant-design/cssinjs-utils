@@ -212,11 +212,9 @@ function genStyleUtils<
 
     return (prefixCls: string, rootCls: string = prefixCls) => {
       const hashId = useStyle(prefixCls, rootCls);
-      const cssVarCls = useCSSVar(rootCls);
-
-      options?.extraCssVarPrefixCls?.forEach((customPrefixCls) => {
-        useCSSVar(customPrefixCls);
-      });
+      const cssVarCls = useCSSVar(
+        options?.extraCssVarPrefixCls ? [rootCls, ...options.extraCssVarPrefixCls] : rootCls,
+      );
 
       return [hashId, cssVarCls] as const;
     };
@@ -238,8 +236,31 @@ function genStyleUtils<
   ) {
     const { unitless: compUnitless, prefixToken, ignore } = options;
 
-    return (rootCls: string) => {
+    return (rootCls: string | string[]) => {
       const { cssVar, realToken } = useToken();
+
+      const tokenGenerator = () => {
+        const defaultToken = getDefaultComponentToken<CompTokenMap, AliasToken, C>(
+          component,
+          realToken,
+          getDefaultToken,
+        );
+        const componentToken = getComponentToken<CompTokenMap, AliasToken, C>(
+          component,
+          realToken,
+          defaultToken,
+          {
+            deprecatedTokens: options?.deprecatedTokens,
+          },
+        );
+        if (defaultToken) {
+          Object.keys(defaultToken).forEach((key) => {
+            componentToken[prefixToken(key)] = componentToken[key];
+            delete componentToken[key];
+          });
+        }
+        return componentToken;
+      };
 
       useCSSVarRegister(
         {
@@ -251,28 +272,7 @@ function genStyleUtils<
           token: realToken,
           scope: rootCls,
         },
-        () => {
-          const defaultToken = getDefaultComponentToken<CompTokenMap, AliasToken, C>(
-            component,
-            realToken,
-            getDefaultToken,
-          );
-          const componentToken = getComponentToken<CompTokenMap, AliasToken, C>(
-            component,
-            realToken,
-            defaultToken,
-            {
-              deprecatedTokens: options?.deprecatedTokens,
-            },
-          );
-          if (defaultToken) {
-            Object.keys(defaultToken).forEach((key) => {
-              componentToken[prefixToken(key)] = componentToken[key];
-              delete componentToken[key];
-            });
-          }
-          return componentToken;
-        },
+        tokenGenerator,
       );
 
       return cssVar?.key;
