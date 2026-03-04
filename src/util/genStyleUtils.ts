@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 
 import type { CSSInterpolation, CSSObject, TokenType } from '@ant-design/cssinjs';
 
@@ -251,6 +252,7 @@ function genStyleUtils<
 
     return (rootCls: string | string[]) => {
       const { cssVar, realToken } = useToken();
+      const csp = useCSP();
 
       useCSSVarRegister(
         {
@@ -261,6 +263,7 @@ function genStyleUtils<
           ignore,
           token: realToken,
           scope: rootCls,
+          nonce: () => csp.nonce!,
         },
         () => {
           const defaultToken = getDefaultComponentToken<CompTokenMap, AliasToken, C>(
