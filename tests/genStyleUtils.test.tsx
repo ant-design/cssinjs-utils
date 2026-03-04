@@ -177,4 +177,53 @@ describe('genStyleUtils', () => {
       expect(usePrefix).not.toHaveBeenCalled();
     });
   });
+
+  describe('nonce support', () => {
+    it('should pass nonce to useCSSVarRegister', () => {
+      const testNonce = 'test-nonce-12345';
+      const config = {
+        usePrefix: jest.fn().mockReturnValue({
+          rootPrefixCls: 'ant',
+          iconPrefixCls: 'anticon',
+        }),
+        useToken: jest.fn().mockReturnValue({
+          theme: {},
+          realToken: { colorPrimary: '#1890ff' },
+          hashId: 'hash',
+          token: { colorPrimary: '#1890ff' },
+          cssVar: {
+            prefix: 'ant',
+            key: 'test-key',
+          },
+        }),
+        useCSP: jest.fn().mockReturnValue({ nonce: testNonce }),
+      };
+
+      const { genStyleHooks: gen } = genStyleUtils<TestCompTokenMap, object, object>(config);
+
+      const useStyle = gen(
+        'TestComponent',
+        () => ({}),
+        () => ({}),
+      );
+
+      const TestComponent: React.FC<{ prefixCls: string }> = ({ prefixCls }) => {
+        useStyle(prefixCls);
+        return <div data-testid="test-component">Test</div>;
+      };
+
+      render(
+        <StyleProvider cache={createCache()}>
+          <TestComponent prefixCls="test-prefix" />
+        </StyleProvider>,
+      );
+
+      // Check that style tags have the nonce attribute
+      const styleTags = document.querySelectorAll('style');
+      const hasNonce = Array.from(styleTags).some(
+        (style) => style.getAttribute('nonce') === testNonce,
+      );
+      expect(hasNonce).toBe(true);
+    });
+  });
 });
