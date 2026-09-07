@@ -226,4 +226,52 @@ describe('genStyleUtils', () => {
       expect(hasNonce).toBe(true);
     });
   });
+
+  describe('component token same as global token', () => {
+    it('should fall back to the global css var', () => {
+      const config = {
+        ...mockConfig,
+        useToken: jest.fn().mockReturnValue({
+          theme: {},
+          realToken: { borderRadius: 4 },
+          hashId: 'hash',
+          token: { borderRadius: 4 },
+          cssVar: {
+            prefix: 'ant',
+            key: 'test-key',
+          },
+        }),
+      };
+
+      const { genStyleHooks: gen } = genStyleUtils<TestCompTokenMap, object, object>(config);
+
+      const useStyle = gen(
+        'TestComponent',
+        (token) => ({
+          [`${token.componentCls}`]: {
+            borderRadius: token.borderRadius,
+          },
+        }),
+        () => ({ borderRadius: 4 }),
+      );
+
+      const TestComponent: React.FC<{ prefixCls: string }> = ({ prefixCls }) => {
+        useStyle(prefixCls);
+        return <div data-testid="test-component">Test</div>;
+      };
+
+      render(
+        <StyleProvider cache={createCache()}>
+          <TestComponent prefixCls="test-prefix" />
+        </StyleProvider>,
+      );
+
+      const totalStyle = Array.from(document.querySelectorAll('style'))
+        .map((el) => el.textContent)
+        .join('\n');
+
+      expect(totalStyle).toContain('border-radius:var(--ant-border-radius)');
+      expect(totalStyle).not.toContain('var(--ant-test-component-border-radius)');
+    });
+  });
 });

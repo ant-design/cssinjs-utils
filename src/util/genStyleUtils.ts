@@ -405,9 +405,10 @@ function genStyleUtils<
 
           if (defaultComponentToken && typeof defaultComponentToken === 'object') {
             Object.keys(defaultComponentToken).forEach((key) => {
+              // Keys dropped by `getComponentToken` share the global token value, use the global var.
               defaultComponentToken[key] = `var(${token2CSSVar(
                 key,
-                getCompVarPrefix(component, cssVar.prefix),
+                key in componentToken ? getCompVarPrefix(component, cssVar.prefix) : cssVar.prefix,
               )})`;
             });
           }
