@@ -228,14 +228,14 @@ describe('genStyleUtils', () => {
   });
 
   describe('component token same as global token', () => {
-    it('should fall back to the global css var', () => {
+    it('should alias the global css var', () => {
       const config = {
         ...mockConfig,
         useToken: jest.fn().mockReturnValue({
           theme: {},
-          realToken: { borderRadius: 4 },
+          realToken: { borderRadius: 4, fontSize: 14 },
           hashId: 'hash',
-          token: { borderRadius: 4 },
+          token: { borderRadius: 4, fontSize: 14 },
           cssVar: {
             prefix: 'ant',
             key: 'test-key',
@@ -250,9 +250,10 @@ describe('genStyleUtils', () => {
         (token) => ({
           [`${token.componentCls}`]: {
             borderRadius: token.borderRadius,
+            fontSize: token.fontSize,
           },
         }),
-        () => ({ borderRadius: 4 }),
+        () => ({ borderRadius: 4, fontSize: 16 }),
       );
 
       const TestComponent: React.FC<{ prefixCls: string }> = ({ prefixCls }) => {
@@ -270,8 +271,9 @@ describe('genStyleUtils', () => {
         .map((el) => el.textContent)
         .join('\n');
 
-      expect(totalStyle).toContain('border-radius:var(--ant-border-radius)');
-      expect(totalStyle).not.toContain('var(--ant-test-component-border-radius)');
+      expect(totalStyle).toContain('--ant-test-component-border-radius:var(--ant-border-radius)');
+      expect(totalStyle).toContain('--ant-test-component-font-size:16px');
+      expect(totalStyle).toContain('border-radius:var(--ant-test-component-border-radius)');
     });
   });
 });

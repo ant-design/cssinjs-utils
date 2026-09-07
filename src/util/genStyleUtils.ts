@@ -281,7 +281,11 @@ function genStyleUtils<
           );
           if (defaultToken) {
             Object.keys(defaultToken).forEach((key) => {
-              componentToken[prefixToken(key)] = componentToken[key];
+              // Dropped by `getComponentToken` means same as global token, alias it
+              componentToken[prefixToken(key)] =
+                key in componentToken
+                  ? componentToken[key]
+                  : `var(${token2CSSVar(key, cssVar.prefix)})`;
               delete componentToken[key];
             });
           }
@@ -405,10 +409,9 @@ function genStyleUtils<
 
           if (defaultComponentToken && typeof defaultComponentToken === 'object') {
             Object.keys(defaultComponentToken).forEach((key) => {
-              // Keys dropped by `getComponentToken` share the global token value, use the global var.
               defaultComponentToken[key] = `var(${token2CSSVar(
                 key,
-                key in componentToken ? getCompVarPrefix(component, cssVar.prefix) : cssVar.prefix,
+                getCompVarPrefix(component, cssVar.prefix),
               )})`;
             });
           }
