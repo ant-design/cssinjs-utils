@@ -9,6 +9,11 @@ interface TestCompTokenMap {
   TestComponent: object;
 }
 
+interface TestAliasToken {
+  borderRadius: number;
+  fontSize: number;
+}
+
 describe('genStyleUtils', () => {
   const mockConfig = {
     usePrefix: jest.fn().mockReturnValue({
@@ -243,7 +248,9 @@ describe('genStyleUtils', () => {
         }),
       };
 
-      const { genStyleHooks: gen } = genStyleUtils<TestCompTokenMap, object, object>(config);
+      const { genStyleHooks: gen } = genStyleUtils<TestCompTokenMap, TestAliasToken, object>(
+        config,
+      );
 
       const useStyle = gen(
         'TestComponent',
