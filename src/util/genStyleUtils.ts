@@ -281,7 +281,11 @@ function genStyleUtils<
           );
           if (defaultToken) {
             Object.keys(defaultToken).forEach((key) => {
-              componentToken[prefixToken(key)] = componentToken[key];
+              // Dropped by `getComponentToken` means same as global token, alias it
+              componentToken[prefixToken(key)] =
+                key in componentToken
+                  ? componentToken[key]
+                  : `var(${token2CSSVar(key, cssVar.prefix)})`;
               delete componentToken[key];
             });
           }

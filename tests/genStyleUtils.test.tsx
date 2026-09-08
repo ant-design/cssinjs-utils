@@ -9,6 +9,11 @@ interface TestCompTokenMap {
   TestComponent: object;
 }
 
+interface TestAliasToken {
+  borderRadius: number;
+  fontSize: number;
+}
+
 describe('genStyleUtils', () => {
   const mockConfig = {
     usePrefix: jest.fn().mockReturnValue({
@@ -224,6 +229,58 @@ describe('genStyleUtils', () => {
         (style) => style.getAttribute('nonce') === testNonce,
       );
       expect(hasNonce).toBe(true);
+    });
+  });
+
+  describe('component token same as global token', () => {
+    it('should alias the global css var', () => {
+      const config = {
+        ...mockConfig,
+        useToken: jest.fn().mockReturnValue({
+          theme: {},
+          realToken: { borderRadius: 4, fontSize: 14 },
+          hashId: 'hash',
+          token: { borderRadius: 4, fontSize: 14 },
+          cssVar: {
+            prefix: 'ant',
+            key: 'test-key',
+          },
+        }),
+      };
+
+      const { genStyleHooks: gen } = genStyleUtils<TestCompTokenMap, TestAliasToken, object>(
+        config,
+      );
+
+      const useStyle = gen(
+        'TestComponent',
+        (token) => ({
+          [`${token.componentCls}`]: {
+            borderRadius: token.borderRadius,
+            fontSize: token.fontSize,
+          },
+        }),
+        () => ({ borderRadius: 4, fontSize: 16 }),
+      );
+
+      const TestComponent: React.FC<{ prefixCls: string }> = ({ prefixCls }) => {
+        useStyle(prefixCls);
+        return <div data-testid="test-component">Test</div>;
+      };
+
+      render(
+        <StyleProvider cache={createCache()}>
+          <TestComponent prefixCls="test-prefix" />
+        </StyleProvider>,
+      );
+
+      const totalStyle = Array.from(document.querySelectorAll('style'))
+        .map((el) => el.textContent)
+        .join('\n');
+
+      expect(totalStyle).toContain('--ant-test-component-border-radius:var(--ant-border-radius)');
+      expect(totalStyle).toContain('--ant-test-component-font-size:16px');
+      expect(totalStyle).toContain('border-radius:var(--ant-test-component-border-radius)');
     });
   });
 });
